@@ -205,6 +205,34 @@ identification aid, not decoration. Keep it roughly honest.
 
 ### Photographs
 
+**Do not use seed-supplier or stock photographs.** They are copyrighted, some
+carry a visible copyright notice, and this site is a commercial one with a
+named agency in the footer. Two legitimate routes:
+
+1. **The patch's own camera.** Twenty minutes on an overcast day. Free,
+   clean, and a photo of the pumpkin actually growing in that field is more
+   use for identification than a catalogue shot of a different one.
+2. **Ask the seed supplier.** Growers are often granted use of catalogue
+   images, and several suppliers keep a library for exactly this. Get it in
+   writing before it goes live.
+
+Once photos exist, `tools/prepare-photos.py` does the rest:
+
+```
+python3 tools/prepare-photos.py incoming/ assets/pumpkins/
+```
+
+Name each file after its slug (`crown-prince.jpg`). It cuts the background
+out, trims to the fruit, and writes WebP under 100KB each, so ten photos that
+arrived as 40MB end up as a few hundred KB and the offline cache survives.
+
+A photo already cut out on a phone is passed through untouched - iOS lifts a
+subject better than anything in that script. Known limitation: a shadow
+directly under the fruit often comes along with it. Usually fine, and a
+phone cut-out avoids it.
+
+### Photographs (old note)
+
 The artwork is placeholder illustration. **It should be replaced with photos of
 the patch's own pumpkins**, not stock images: stock is a copyright liability on
 a commercial site, and a generic photo of a Crown Prince is less use for
