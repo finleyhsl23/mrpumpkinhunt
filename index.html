@@ -172,6 +172,14 @@
         <p>It lists every variety you found and what each one&rsquo;s best for once you get it home.</p>
       </div>
 
+      <!-- Finished without finding any. There is no guide to send, so do not
+           ask for an address to send it to: the server rightly refuses an
+           empty guide with a 400, and asking would be a promise we cannot
+           keep. -->
+      <div id="doneNothing" class="stack hide">
+        <p>You haven&rsquo;t found any yet, so there&rsquo;s nothing to put in a guide. The signs are dotted all round the field &mdash; scan one and this fills up fast.</p>
+      </div>
+
       <!-- Skipped earlier: this is the honest version of the ask. Their hunt
            really does live only on this phone. -->
       <div id="doneAsk" class="stack hide">
@@ -318,9 +326,12 @@
       n === 0 ? "Back to the hunt" : n === 1 ? "View the one you found" : "View your " + n;
 
     var saved = Hunt.email();
-    document.getElementById("doneSaved").classList.toggle("hide", !saved);
-    document.getElementById("doneAsk").classList.toggle("hide", !!saved);
-    if (saved) {
+    var nothing = n === 0;
+
+    document.getElementById("doneNothing").classList.toggle("hide", !nothing);
+    document.getElementById("doneSaved").classList.toggle("hide", nothing || !saved);
+    document.getElementById("doneAsk").classList.toggle("hide", nothing || !!saved);
+    if (!nothing && saved) {
       document.getElementById("doneSavedTo").textContent = "Your guide is on its way to " + saved + ".";
     }
     Hunt.paintProgress();
@@ -463,7 +474,7 @@
        it fails, say so and offer a retry - claiming "on its way" when it is
        not is worse than admitting it. */
     var saved = Hunt.email();
-    if (saved) {
+    if (saved && Hunt.foundCount() > 0) {
       Hunt.sendGuide(saved, "").then(function (res) {
         if (res && res.ok) return;
         document.getElementById("doneSaved").classList.add("hide");
@@ -486,6 +497,13 @@
     if (!EMAIL_RE.test(email)) {
       msg.className = "msg msg-bad";
       msg.textContent = "That email doesn’t look quite right.";
+      return;
+    }
+    /* Belt and braces - the form is hidden at zero, but never ask the server
+       to build a guide out of nothing. It rightly answers 400. */
+    if (Hunt.foundCount() === 0) {
+      msg.className = "msg msg-bad";
+      msg.textContent = "Find at least one pumpkin first and we’ll send the guide.";
       return;
     }
     if (!navigator.onLine) {

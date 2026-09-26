@@ -8,7 +8,7 @@
  * Bump CACHE when anything in SHELL changes, or phones keep serving the old
  * copy until their site data is cleared.
  */
-var CACHE = "mrpumpkin-v13";
+var CACHE = "mrpumpkin-v14";
 
 /* Canonical, extensionless paths only.
  *
