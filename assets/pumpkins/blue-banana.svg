@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="Illustration of a blue banana pumpkin">
+  <ellipse cx="160" cy="286" rx="104" ry="20" fill="#000" opacity="0.16"/>
+  <ellipse cx="152" cy="204" rx="120" ry="58" fill="#5a7386"/>
+  <ellipse cx="146" cy="201" rx="112" ry="51" fill="#7793a6"/>
+  <ellipse cx="138" cy="197" rx="99" ry="42" fill="#92aec0"/>
+  <path d="M50 178c58-12 140-12 186 3M46 226c60 12 144 12 190-3" stroke="#5a7386"
+        stroke-width="3" fill="none" opacity="0.28"/>
+  <path d="M262 190c14-2 26-10 30-21 2-6 9-7 12-2 4 6 1 16-6 24-9 10-22 15-36 15z"
+        fill="#6f4a22"/>
+  <ellipse cx="134" cy="158" rx="13" ry="22" fill="#fff" opacity="0.14" transform="rotate(-16 134 158)"/>
+</svg>

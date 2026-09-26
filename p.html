@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Found one! &middot; Mr Pumpkin</title>
+<meta name="theme-color" content="#16101d">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="/"><span class="brand-dot"></span> Pumpkin Hunt</a>
+    <span class="count" data-count>0 of 10</span>
+  </div>
+  <div class="bar"><i data-bar></i></div>
+</header>
+<div class="offline">No signal out here &mdash; that&rsquo;s fine, your hunt is saved on this phone.</div>
+
+<main class="wrap" id="main" style="padding-top:18px"></main>
+
+<script src="/assets/pumpkins.js"></script>
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var main = document.getElementById("main");
+
+  /* The sign's QR points at /p/<code>. A hand-typed link or an older sign
+     may arrive as ?c=<code> instead, so both are accepted. */
+  function codeFromUrl() {
+    var m = window.location.pathname.match(/\/p\/([^\/?#]+)/i);
+    if (m) return decodeURIComponent(m[1]);
+    return new URLSearchParams(window.location.search).get("c") || "";
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* An unrecognised code is a mis-scan or a damaged sign, never a 404 - the
+     person is stood in a field and needs a way forward, not an error page. */
+  function renderUnknown(code) {
+    main.innerHTML =
+      '<section class="card stack">' +
+        "<h1>Hmm, that&rsquo;s not one of ours</h1>" +
+        "<p>The code " + (code ? "<strong>" + esc(code) + "</strong> " : "") +
+        "doesn&rsquo;t match a pumpkin here. The sign may be damaged, or the camera may have misread it in the dark.</p>" +
+        '<a class="btn btn-primary" href="/">Back to your collection</a>' +
+        '<p class="hint-text">You can type the code in by hand from there, or ask anyone in a Mr Pumpkin top.</p>' +
+      "</section>";
+    Hunt.track("bad_code", { code: String(code).slice(0, 12) });
+  }
+
+  function render(p, isNew) {
+    var tag = window.BEST_FOR_LABELS[p.bestForKey] || { label: p.bestFor, cls: "tag-show" };
+    var n = Hunt.foundCount();
+    var left = Hunt.total() - n;
+
+    var next = Hunt.isComplete()
+      ? '<a class="btn btn-primary" href="/">That&rsquo;s all ten &mdash; see them</a>'
+      : '<a class="btn btn-primary" href="/">' + left + (left === 1 ? " left to find" : " more to find") + "</a>";
+
+    main.innerHTML =
+      '<section class="stack-lg">' +
+        '<div class="stack">' +
+          (isNew
+            ? '<div class="found-flash">&#10003; Found &mdash; number ' + n + " of " + Hunt.total() + "</div>"
+            : '<div class="found-flash" style="color:var(--muted)">You already had this one</div>') +
+          '<div class="hero-art"><img src="' + Hunt.artFor(p) + '" alt="' + esc(p.name) + '"></div>' +
+          "<div>" +
+            '<span class="eyebrow">' + esc(p.tagline) + "</span>" +
+            '<h1 style="margin-top:8px">' + esc(p.name) + "</h1>" +
+          "</div>" +
+          '<div class="meta-row">' +
+            '<span class="tag ' + tag.cls + '">' + esc(tag.label) + "</span>" +
+            '<span class="meta-size">' + esc(p.size) + "</span>" +
+          "</div>" +
+          "<p>" + esc(p.description) + "</p>" +
+          '<p class="fact">' + esc(p.fact) + "</p>" +
+        "</div>" +
+        next +
+      "</section>" +
+      '<footer class="foot"><p>Mr Pumpkin &middot; Pumpkin Hunt</p>' +
+      '<p>Built by <a href="https://smartcoretechnology.co.uk" rel="noopener">SmartCore Technology</a></p></footer>';
+
+    document.title = p.name + " · Mr Pumpkin";
+    Hunt.paintProgress();
+  }
+
+  var code = codeFromUrl();
+  var pumpkin = Hunt.byCode(code);
+  if (!pumpkin) { renderUnknown(code); return; }
+
+  var isNew = Hunt.markFound(pumpkin.slug);
+  render(pumpkin, isNew);
+
+  if (isNew && Hunt.isComplete()) Hunt.track("complete", {});
+})();
+</script>
+</body>
+</html>

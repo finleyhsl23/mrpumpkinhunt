@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="Illustration of a magic lantern pumpkin">
+  <ellipse cx="160" cy="286" rx="104" ry="20" fill="#000" opacity="0.16"/>
+  <path d="M153 90c-4-20 1-35 12-42 10-6 21-5 24 2 3 7-1 12-8 15-8 4-11 12-9 25z" fill="#6f4a22"/>
+  <path d="M153 90c-3-15 0-27 7-34-6 14-7 24-4 34z" fill="#57381a"/>
+  <ellipse cx="100" cy="190" rx="60" ry="92" fill="#bd4f07"/>
+  <ellipse cx="220" cy="190" rx="60" ry="92" fill="#bd4f07"/>
+  <ellipse cx="124" cy="188" rx="50" ry="96" fill="#de650d"/>
+  <ellipse cx="196" cy="188" rx="50" ry="96" fill="#de650d"/>
+  <ellipse cx="160" cy="186" rx="52" ry="99" fill="#f77c17"/>
+  <path d="M130 96c-7 63 -7 117 0 180" stroke="#bd4f07" stroke-width="3" fill="none" opacity="0.35"/>
+  <path d="M190 96c-7 63 -7 117 0 180" stroke="#bd4f07" stroke-width="3" fill="none" opacity="0.35"/>
+  <ellipse cx="134" cy="158" rx="13" ry="22" fill="#fff" opacity="0.14" transform="rotate(-16 134 158)"/>
+</svg>

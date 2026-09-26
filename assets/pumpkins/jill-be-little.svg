@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="Illustration of a jill be little pumpkin">
+  <ellipse cx="160" cy="286" rx="104" ry="16" fill="#000" opacity="0.16"/>
+  <path d="M153 192c-4-20 1-35 12-42 10-6 21-5 24 2 3 7-1 12-8 15-8 4-11 12-9 25z" fill="#6f4a22"/>
+  <path d="M153 192c-3-15 0-27 7-34-6 14-7 24-4 34z" fill="#57381a"/>
+  <ellipse cx="112" cy="232" rx="42" ry="34" fill="#d9cfae"/>
+  <ellipse cx="208" cy="232" rx="42" ry="34" fill="#d9cfae"/>
+  <ellipse cx="134" cy="231" rx="36" ry="38" fill="#eee6c8"/>
+  <ellipse cx="186" cy="231" rx="36" ry="38" fill="#eee6c8"/>
+  <ellipse cx="160" cy="230" rx="37" ry="40" fill="#faf5e2"/>
+  <path d="M130 196c-7 24 -7 44 0 68" stroke="#d9cfae" stroke-width="3" fill="none" opacity="0.35"/>
+  <path d="M190 196c-7 24 -7 44 0 68" stroke="#d9cfae" stroke-width="3" fill="none" opacity="0.35"/>
+  <ellipse cx="134" cy="158" rx="13" ry="22" fill="#fff" opacity="0.14" transform="rotate(-16 134 158)"/>
+</svg>

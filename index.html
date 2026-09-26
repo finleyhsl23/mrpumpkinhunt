@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mr Pumpkin &middot; Pumpkin Hunt</title>
+<meta name="description" content="Find all ten pumpkin varieties growing at Mr Pumpkin. Scan the sign by each one to collect it.">
+<meta name="theme-color" content="#16101d">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="/"><span class="brand-dot"></span> Pumpkin Hunt</a>
+    <span class="count" data-count>0 of 10</span>
+  </div>
+  <div class="bar"><i data-bar></i></div>
+</header>
+<div class="offline">No signal out here &mdash; that&rsquo;s fine, your hunt is saved on this phone.</div>
+
+<main class="wrap">
+
+  <!-- Shown until the first pumpkin is found, then it gets out of the way. -->
+  <section id="intro" class="card stack hide" style="margin-top:20px">
+    <div>
+      <span class="eyebrow">Welcome to the patch</span>
+      <h1 style="margin-top:8px">Ten pumpkins are hiding out there.</h1>
+    </div>
+    <p class="lede">Every variety we grow has its own sign somewhere in the field. Scan the code on a sign and that pumpkin joins your collection.</p>
+    <p>No app, no sign-up. Your hunt is saved on this phone as you go.</p>
+    <button class="btn btn-primary" id="startBtn">Show me the ten</button>
+  </section>
+
+  <section style="margin-top:20px">
+    <div class="stack" style="margin-bottom:14px">
+      <h2 id="gridHeading">Your collection</h2>
+      <p id="gridSub">Tap any you&rsquo;ve found to read about it again.</p>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- Signs get muddy, snapped and knocked over by livestock. Staff can read
+       the code off the back of any sign and the visitor types it in here. -->
+  <section class="card stack" style="margin-top:26px">
+    <div>
+      <h2>Sign won&rsquo;t scan?</h2>
+      <p class="hint-text" style="margin-top:6px">Type the code printed underneath it.</p>
+    </div>
+    <form id="codeForm" novalidate>
+      <input class="code-input" type="text" id="codeInput" inputmode="latin" autocomplete="off"
+             autocapitalize="none" spellcheck="false" maxlength="8" placeholder="a1b2c" aria-label="Pumpkin code">
+      <button class="btn btn-ghost" type="submit" style="margin-top:10px">Find it</button>
+    </form>
+    <div id="codeMsg"></div>
+  </section>
+
+  <!-- Only appears once all ten are in. Nothing is asked of anyone before
+       they have had the fun. -->
+  <section class="card stack hide" id="finish" style="margin-top:26px">
+    <div>
+      <span class="eyebrow">All ten found</span>
+      <h2 style="margin-top:8px">That&rsquo;s the lot. Well done.</h2>
+    </div>
+    <p>Want your pumpkin guide emailed over? It lists every variety you found, what each one is best for, and what to do with it once you get it home. Free, and we&rsquo;ll only send it the once.</p>
+    <form id="guideForm" class="stack" novalidate>
+      <div>
+        <label for="guideName">Who did the hunting?</label>
+        <input type="text" id="guideName" autocomplete="given-name" maxlength="60" placeholder="Alfie &amp; Rosie">
+      </div>
+      <div>
+        <label for="guideEmail">Grown-up&rsquo;s email</label>
+        <input type="email" id="guideEmail" autocomplete="email" required maxlength="160" placeholder="you@example.com">
+      </div>
+      <button class="btn btn-primary" type="submit" id="guideBtn">Email my guide</button>
+      <p class="form-note">A grown-up should fill this in. We use the address once to send the guide and for nothing else.
+        <a href="/privacy">How we handle it</a>.</p>
+    </form>
+    <div id="guideMsg"></div>
+  </section>
+
+  <footer class="foot">
+    <p>Mr Pumpkin &middot; Pumpkin Hunt</p>
+    <p>Built by <a href="https://smartcoretechnology.co.uk" rel="noopener">SmartCore Technology</a></p>
+  </footer>
+</main>
+
+<script src="/assets/pumpkins.js"></script>
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var grid = document.getElementById("grid");
+
+  /* Tiles are sized against the biggest variety in the list, so the grid
+     shows real relative size at a glance. */
+  var maxScale = Math.max.apply(null, window.PUMPKINS.map(function (p) { return p.scale; }));
+
+  function tile(p) {
+    var found = Hunt.isFound(p.slug);
+    var el = document.createElement(found ? "a" : "div");
+    el.className = "tile " + (found ? "found" : "locked");
+    if (found) el.href = "/p/" + p.code;
+
+    var h = Math.round(38 + (p.scale / maxScale) * 58);
+    var art = '<div class="tile-art"><img src="' + Hunt.artFor(p) + '" alt="" style="height:' + h + 'px" loading="lazy"></div>';
+    var name = found ? p.name : "Not found yet";
+    var sub = found ? p.bestFor : (p.hint || "Keep looking");
+
+    el.innerHTML =
+      art +
+      '<div class="tile-name">' + name + "</div>" +
+      '<div class="tile-sub">' + sub + "</div>" +
+      (found ? '<div class="tile-check" aria-hidden="true">&#10003;</div>' : "");
+    if (!found) el.setAttribute("aria-label", "Not found yet. " + (p.hint || ""));
+    return el;
+  }
+
+  function paint() {
+    grid.innerHTML = "";
+    window.PUMPKINS.forEach(function (p) { grid.appendChild(tile(p)); });
+
+    var n = Hunt.foundCount();
+    document.getElementById("intro").classList.toggle("hide", n > 0);
+    document.getElementById("finish").classList.toggle("hide", !Hunt.isComplete());
+
+    var sub = document.getElementById("gridSub");
+    if (n === 0) sub.textContent = "Ten to find. Scan the sign beside any pumpkin to start.";
+    else if (Hunt.isComplete()) sub.textContent = "Every one of them. Tap any to read it again.";
+    else sub.textContent = (Hunt.total() - n) + " still out there. Tap any you’ve found to read it again.";
+
+    Hunt.paintProgress();
+  }
+
+  document.getElementById("startBtn").addEventListener("click", function () {
+    document.getElementById("gridHeading").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  /* Manual entry. Same validation as a scan - it just skips the camera. */
+  document.getElementById("codeForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var msg = document.getElementById("codeMsg");
+    var raw = document.getElementById("codeInput").value.trim().toLowerCase();
+    var p = Hunt.byCode(raw);
+    if (!p) {
+      msg.className = "msg msg-bad";
+      msg.textContent = "That code isn’t one of ours. Check it and try again.";
+      return;
+    }
+    window.location.href = "/p/" + p.code;
+  });
+
+  document.getElementById("guideForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var btn = document.getElementById("guideBtn");
+    var msg = document.getElementById("guideMsg");
+    var email = document.getElementById("guideEmail").value.trim();
+    var name = document.getElementById("guideName").value.trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      msg.className = "msg msg-bad";
+      msg.textContent = "That email doesn’t look quite right.";
+      return;
+    }
+    if (!navigator.onLine) {
+      msg.className = "msg msg-bad";
+      msg.textContent = "No signal just now. Try again by the gate or the shop.";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Sending…";
+    msg.className = "";
+    msg.textContent = "";
+
+    fetch("/api/send-guide", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email,
+        name: name,
+        device: Hunt.deviceId(),
+        found: Object.keys(Hunt.found()),
+      }),
+    })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.body && res.body.error ? res.body.error : "send failed");
+        msg.className = "msg msg-ok";
+        msg.textContent = "Sent. Have a look in your inbox — check spam if it’s shy.";
+        document.getElementById("guideForm").classList.add("hide");
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = "Email my guide";
+        msg.className = "msg msg-bad";
+        /* Never a dead end: the guide is on screen regardless. */
+        msg.textContent = "Couldn’t send that just now. Your collection is still saved on this phone.";
+      });
+  });
+
+  paint();
+})();
+</script>
+</body>
+</html>

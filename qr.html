@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign sheet &middot; Mr Pumpkin Hunt</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<!-- Vendored, not linked from a CDN: these signs get printed once and
+     staked in a field. A CDN outage or a blocked network on printing day
+     must not be able to produce a sheet of blank squares. -->
+<script src="/assets/vendor/qrcode.js"></script>
+<style>
+  /* Deliberately its own stylesheet: this page is printed on paper, not read
+     on a phone in a field, so none of the dark-field rules apply. */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    font: 400 15px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif;
+    background: #f4f4f6; color: #16131a;
+  }
+  .panel { max-width: 780px; margin: 0 auto 26px; background: #fff; border-radius: 14px; padding: 22px; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  h2 { font-size: 16px; margin: 22px 0 8px; }
+  p { margin: 0 0 10px; color: #55505e; }
+  label { display: block; font-weight: 600; font-size: 13px; margin: 12px 0 5px; }
+  input { width: 100%; padding: 11px 13px; font: inherit; border: 1px solid #ccc8d4; border-radius: 9px; }
+  button {
+    margin-top: 14px; padding: 12px 20px; font: inherit; font-weight: 600;
+    border: 0; border-radius: 9px; background: #16131a; color: #fff; cursor: pointer;
+  }
+  .warn { background: #fff5e6; border-left: 3px solid #e08a14; padding: 12px 14px; border-radius: 0 9px 9px 0; }
+  .warn strong { color: #8a5405; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #e6e3ec; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: #6d6878; }
+  code { font: 600 15px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .1em; }
+
+  /* One sign per half-page so the printed code is big enough to scan from a
+     stride away and read by torchlight. */
+  .signs { max-width: 780px; margin: 0 auto; }
+  .sign {
+    background: #fff; border-radius: 14px; padding: 28px;
+    display: flex; gap: 26px; align-items: center; margin-bottom: 16px;
+  }
+  .sign .qr { width: 210px; flex: 0 0 210px; }
+  .sign .qr svg { width: 100%; height: auto; display: block; }
+  .sign-words { flex: 1; }
+  .sign-kicker { font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: #c2610d; font-weight: 700; }
+  .sign-title { font-size: 30px; font-weight: 800; line-height: 1.08; margin: 8px 0 10px; }
+  .sign-help { font-size: 15px; color: #55505e; margin: 0 0 14px; }
+  .sign-code { font: 800 30px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .22em; }
+  .sign-code small { display: block; font: 600 11px/1.4 sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #6d6878; margin-bottom: 4px; }
+  .sign-foot { margin-top: 16px; font-size: 11px; color: #8b8694; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .panel, .no-print { display: none !important; }
+    .sign { page-break-inside: avoid; break-inside: avoid; margin: 0 0 14mm; padding: 10mm; border: 1px dashed #bbb; border-radius: 0; }
+    .signs { max-width: none; }
+    @page { margin: 12mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="panel no-print">
+  <h1>Sign sheet</h1>
+  <p>Ten signs, one per variety. Set the address the codes should point at, then print.</p>
+
+  <label for="base">Site address</label>
+  <input id="base" type="url" placeholder="https://hunt.mrpumpkin.co.uk" autocomplete="off">
+  <p style="font-size:13px;margin-top:8px">Whatever you print here is permanent &mdash; the signs are laminated and staked out in a field. Get this right before printing, not after.</p>
+  <button id="go">Update &amp; preview</button>
+  <button id="print" style="background:#c2610d">Print signs</button>
+
+  <h2>Before these go out</h2>
+  <div class="warn">
+    <p><strong>Matte laminate, never gloss.</strong> A phone torch on gloss makes a hotspot the camera cannot read through, and two of your October dates run to 6pm with the last week closing at dusk. This is the most common way a QR trail fails, and it is invisible until it is dark.</p>
+    <p style="margin:0">Mount at chest height where a torch reaches, and keep the white border around the code &mdash; trimming it stops the code scanning.</p>
+  </div>
+
+  <h2>Staff key</h2>
+  <p style="font-size:13px">Which sign is which. Keep this at the gate &mdash; it is not printed with the signs, because the signs must give nothing away.</p>
+  <table id="key"><thead><tr><th>Code</th><th>Variety</th><th>Best for</th></tr></thead><tbody></tbody></table>
+</div>
+
+<div class="signs" id="signs"></div>
+
+<script src="/assets/pumpkins.js"></script>
+<script>
+(function () {
+  "use strict";
+  var KEY = "mrpumpkin.qrbase";
+  var baseInput = document.getElementById("base");
+  var signs = document.getElementById("signs");
+
+  baseInput.value = localStorage.getItem(KEY) || window.location.origin;
+
+  function clean(v) { return String(v || "").trim().replace(/\/+$/, ""); }
+
+  function render() {
+    var base = clean(baseInput.value) || window.location.origin;
+    localStorage.setItem(KEY, base);
+    signs.innerHTML = "";
+
+    window.PUMPKINS.forEach(function (p) {
+      var url = base + "/p/" + p.code;
+
+      /* Error correction H: a third of the code can be mud, scratched or
+         torn and it still reads. Worth the extra density on a sign that
+         lives outdoors for a month. */
+      var qr = qrcode(0, "H");
+      qr.addData(url);
+      qr.make();
+
+      var el = document.createElement("div");
+      el.className = "sign";
+      el.innerHTML =
+        '<div class="qr">' + qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true }) + "</div>" +
+        '<div class="sign-words">' +
+          '<div class="sign-kicker">Mr Pumpkin Hunt</div>' +
+          '<div class="sign-title">Which pumpkin is this?</div>' +
+          '<p class="sign-help">Point your camera at the code to find out &mdash; and collect it.</p>' +
+          '<div class="sign-code"><small>Won’t scan? Type this in</small>' + p.code + "</div>" +
+          '<div class="sign-foot">' + base.replace(/^https?:\/\//, "") + " &middot; built by SmartCore Technology</div>" +
+        "</div>";
+      signs.appendChild(el);
+    });
+
+    var tbody = document.querySelector("#key tbody");
+    tbody.innerHTML = "";
+    window.PUMPKINS.forEach(function (p) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td><code>" + p.code + "</code></td><td>" + p.name + "</td><td>" + p.bestFor + "</td>";
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById("go").addEventListener("click", render);
+  document.getElementById("print").addEventListener("click", function () { render(); window.print(); });
+  render();
+})();
+</script>
+</body>
+</html>

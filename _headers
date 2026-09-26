@@ -1,0 +1,28 @@
+# HTML is never cached: a content fix must reach phones the same day.
+/*.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/p/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# The service worker itself must never be cached, or a bad deploy is
+# permanent on every phone that saw it.
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Data and logic change during the season; revalidate rather than trust.
+/assets/pumpkins.js
+  Cache-Control: no-cache, must-revalidate
+/assets/app.js
+  Cache-Control: no-cache, must-revalidate
+/assets/styles.css
+  Cache-Control: no-cache, must-revalidate
+
+# Artwork is content-stable and the heaviest thing here - cache it hard.
+/assets/pumpkins/*
+  Cache-Control: public, max-age=604800

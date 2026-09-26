@@ -1,0 +1,7 @@
+# The QR signs encode /p/<code>. One document answers every code; the page
+# reads the code out of the path. Short URLs make a coarser, faster-scanning
+# QR, which matters in a dark field.
+/p/*        /p.html        200
+
+/privacy    /privacy.html  200
+/qr         /qr.html       200
