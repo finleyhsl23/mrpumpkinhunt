@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mr Pumpkin &middot; Pumpkin Hunt</title>
-<meta name="description" content="Find all ten pumpkin varieties growing at Mr Pumpkin. Scan the sign by each one to collect it.">
-<meta name="theme-color" content="#16101d">
+<title>Pumpkin Hunt &middot; Mr Pumpkin</title>
+<meta name="description" content="Find all ten pumpkin varieties growing at Mr Pumpkin. Scan the sign beside each one to collect it.">
+<meta name="theme-color" content="#140d08">
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
@@ -20,85 +20,142 @@
     <a class="brand" href="/">
       <svg viewBox="0 0 32 32" aria-hidden="true">
         <path d="M15 11c-1-5 1-8 3-9 2-1 4 1 3 3-1 2-3 2-4 3-1 1-1 2-1 3z" fill="#7a5226"/>
-        <ellipse cx="9"  cy="20" rx="7.5" ry="9" fill="#bd4f07"/>
-        <ellipse cx="23" cy="20" rx="7.5" ry="9" fill="#bd4f07"/>
-        <ellipse cx="12.5" cy="19.5" rx="6" ry="9.5" fill="#de650d"/>
-        <ellipse cx="19.5" cy="19.5" rx="6" ry="9.5" fill="#de650d"/>
-        <ellipse cx="16" cy="19" rx="6.2" ry="10" fill="#f77c17"/>
+        <ellipse cx="9"  cy="20" rx="7.5" ry="9" fill="#c2540a"/>
+        <ellipse cx="23" cy="20" rx="7.5" ry="9" fill="#c2540a"/>
+        <ellipse cx="12.5" cy="19.5" rx="6" ry="9.5" fill="#e0680f"/>
+        <ellipse cx="19.5" cy="19.5" rx="6" ry="9.5" fill="#e0680f"/>
+        <ellipse cx="16" cy="19" rx="6.2" ry="10" fill="#f97316"/>
       </svg>
       Pumpkin Hunt
     </a>
-    <span class="count" data-count>0 of 10</span>
+    <span class="count hide" data-count>0 of 10</span>
   </div>
-  <div class="pips" data-pips></div>
+  <div class="pips hide" data-pips></div>
 </header>
 <div class="offline">No signal out here &mdash; that&rsquo;s fine, your hunt is saved on this phone.</div>
 
 <main class="wrap">
 
-  <!-- Shown until the first pumpkin is found, then it gets out of the way. -->
-  <section id="intro" class="card stack hide" style="margin-top:20px">
-    <div>
-      <span class="eyebrow">Welcome to the patch</span>
-      <h1 style="margin-top:8px">Ten pumpkins are hiding out there.</h1>
-    </div>
-    <p class="lede">Every variety we grow has its own sign somewhere in the field. Scan the code on a sign and that pumpkin joins your collection.</p>
-    <p>No app, no sign-up. Your hunt is saved on this phone as you go.</p>
-    <button class="btn btn-primary" id="startBtn">Show me the ten</button>
-  </section>
-
-  <section style="margin-top:20px">
-    <div class="stack" style="margin-bottom:14px">
-      <h2 id="gridHeading">Your collection</h2>
-      <p id="gridSub">Tap any you&rsquo;ve found to read about it again.</p>
-    </div>
-    <div class="grid" id="grid"></div>
-  </section>
-
-  <!-- Signs get muddy, snapped and knocked over by livestock. Staff can read
-       the code off the back of any sign and the visitor types it in here. -->
-  <section class="card stack" style="margin-top:26px">
-    <div>
-      <h2>Sign won&rsquo;t scan?</h2>
-      <p class="hint-text" style="margin-top:6px">Type the code printed underneath it.</p>
-    </div>
-    <form id="codeForm" novalidate>
-      <input class="code-input" type="text" id="codeInput" inputmode="latin" autocomplete="off"
-             autocapitalize="none" spellcheck="false" maxlength="8" placeholder="a1b2c" aria-label="Pumpkin code">
-      <button class="btn btn-ghost" type="submit" style="margin-top:10px">Find it</button>
-    </form>
-    <div id="codeMsg"></div>
-  </section>
-
-  <!-- Only appears once all ten are in. Nothing is asked of anyone before
-       they have had the fun. -->
-  <section class="card card-warm stack hide" id="finish" style="margin-top:26px">
-    <div class="trophy">
-      <div class="trophy-ring" aria-hidden="true">&#127875;</div>
-      <span class="eyebrow" style="justify-content:center">All ten found</span>
-      <h2 style="margin-top:10px">That&rsquo;s the lot. Well done.</h2>
-    </div>
-    <p>Want your pumpkin guide emailed over? It lists every variety you found, what each one is best for, and what to do with it once you get it home. Free, and we&rsquo;ll only send it the once.</p>
-    <form id="guideForm" class="stack" novalidate>
-      <div>
-        <label for="guideName">Who did the hunting?</label>
-        <input type="text" id="guideName" autocomplete="given-name" maxlength="60" placeholder="Alfie &amp; Rosie">
+  <!-- ==================== 1. START ==================== -->
+  <section class="screen" id="screenStart" style="padding-top:22px">
+    <div class="card hero-card stack">
+      <span class="eyebrow">Mr Pumpkin &middot; Derby</span>
+      <h1>Ten pumpkins are hiding in the patch.</h1>
+      <p class="lede">We grow over fifty varieties. Ten of them have a sign beside them somewhere in the field &mdash; scan one and that pumpkin joins your collection.</p>
+      <div class="chips">
+        <div class="chip"><b>10</b><span>To find</span></div>
+        <div class="chip"><b>Camera</b><span>All you need</span></div>
+        <div class="chip"><b>Free</b><span>With your ticket</span></div>
       </div>
+      <button class="btn btn-primary" id="startBtn">Start the hunt</button>
+    </div>
+
+    <footer class="foot">
+      <p>Mr Pumpkin &middot; Pick Your Perfect Pumpkin Near Derby</p>
+      <p>Hunt built by <a href="https://smartcoretechnology.co.uk" rel="noopener">SmartCore Technology</a></p>
+    </footer>
+  </section>
+
+  <!-- ==================== 2. SAVE PROGRESS ==================== -->
+  <section class="screen hide" id="screenEmail" style="padding-top:22px">
+    <div class="card stack">
       <div>
-        <label for="guideEmail">Grown-up&rsquo;s email</label>
-        <input type="email" id="guideEmail" autocomplete="email" required maxlength="160" placeholder="you@example.com">
+        <span class="eyebrow">Before you set off</span>
+        <h1 style="margin-top:10px;font-size:clamp(26px,7vw,34px)">Want your hunt saved?</h1>
       </div>
-      <button class="btn btn-primary" type="submit" id="guideBtn">Email my guide</button>
-      <p class="form-note">A grown-up should fill this in. We use the address once to send the guide and for nothing else.
+      <p>Pop an email in and we&rsquo;ll keep your progress and send your pumpkin guide at the end &mdash; every variety you found and what each one&rsquo;s best for.</p>
+      <form class="stack" id="earlyForm" novalidate>
+        <div>
+          <label for="earlyEmail">Grown-up&rsquo;s email</label>
+          <input type="email" id="earlyEmail" autocomplete="email" maxlength="160" placeholder="you@example.com">
+        </div>
+        <button class="btn btn-primary" type="submit">Save it &amp; start hunting</button>
+      </form>
+      <button class="skip" id="skipBtn">Skip &mdash; just let me start</button>
+      <p class="form-note">A grown-up should fill this in. We use the address to send your guide and nothing else.
         <a href="/privacy">How we handle it</a>.</p>
-    </form>
-    <div id="guideMsg"></div>
+    </div>
   </section>
 
-  <footer class="foot">
-    <p>Mr Pumpkin &middot; Pumpkin Hunt</p>
-    <p>Built by <a href="https://smartcoretechnology.co.uk" rel="noopener">SmartCore Technology</a></p>
-  </footer>
+  <!-- ==================== 3. THE HUNT ==================== -->
+  <section class="screen hide" id="screenHunt" style="padding-top:20px">
+    <div class="stack" style="margin-bottom:16px">
+      <h2 id="gridHeading">Your collection</h2>
+      <p id="gridSub">Ten to find. Scan the sign beside any pumpkin.</p>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="finish-cta">
+      <button class="btn btn-primary" id="finishBtn" disabled>Finish the hunt</button>
+      <p class="finish-hint" id="finishHint">Find all ten to finish.</p>
+    </div>
+
+    <!-- Signs get muddy, snapped and knocked over by livestock. Staff read the
+         code off the sign and the visitor types it here. -->
+    <section class="card stack" style="margin-top:26px">
+      <div>
+        <h2>Sign won&rsquo;t scan?</h2>
+        <p class="hint-text" style="margin-top:6px">Type the code printed underneath it.</p>
+      </div>
+      <form id="codeForm" novalidate>
+        <input class="code-input" type="text" id="codeInput" inputmode="latin" autocomplete="off"
+               autocapitalize="none" spellcheck="false" maxlength="8" placeholder="a1b2c" aria-label="Pumpkin code">
+        <button class="btn btn-ghost" type="submit" style="margin-top:11px">Find it</button>
+      </form>
+      <div id="codeMsg"></div>
+    </section>
+
+    <footer class="foot">
+      <p>Mr Pumpkin &middot; Pick Your Perfect Pumpkin Near Derby</p>
+      <p>Hunt built by <a href="https://smartcoretechnology.co.uk" rel="noopener">SmartCore Technology</a></p>
+    </footer>
+  </section>
+
+  <!-- ==================== 4. FINISHED ==================== -->
+  <section class="screen hide" id="screenDone" style="padding-top:22px">
+    <div class="card card-warm stack">
+      <div class="trophy">
+        <div class="trophy-ring" aria-hidden="true">&#127875;</div>
+        <span class="eyebrow" style="justify-content:center">All ten found</span>
+        <h1 style="margin-top:10px;font-size:clamp(28px,7.4vw,38px)">That&rsquo;s the lot. Well done.</h1>
+      </div>
+
+      <!-- Already gave us an address on the way in: nothing more to ask. -->
+      <div id="doneSaved" class="stack hide">
+        <div class="saved-note">&#10003; <span id="doneSavedTo">Your guide is on its way.</span></div>
+        <p>It lists every variety you found and what each one&rsquo;s best for once you get it home.</p>
+      </div>
+
+      <!-- Skipped earlier: this is the honest version of the ask. Their hunt
+           really does live only on this phone. -->
+      <div id="doneAsk" class="stack hide">
+        <p>Your hunt is saved on this phone and nowhere else &mdash; clear your browser and it&rsquo;s gone. Pop an email in and we&rsquo;ll send your pumpkin guide so you keep it.</p>
+        <form class="stack" id="doneForm" novalidate>
+          <div>
+            <label for="doneName">Who did the hunting?</label>
+            <input type="text" id="doneName" autocomplete="given-name" maxlength="60" placeholder="Alfie &amp; Rosie">
+          </div>
+          <div>
+            <label for="doneEmail">Grown-up&rsquo;s email</label>
+            <input type="email" id="doneEmail" autocomplete="email" maxlength="160" placeholder="you@example.com">
+          </div>
+          <button class="btn btn-primary" type="submit" id="doneBtn">Send me my guide</button>
+        </form>
+        <p class="form-note">A grown-up should fill this in. One email, nothing else, ever.
+          <a href="/privacy">How we handle it</a>.</p>
+      </div>
+
+      <div id="doneMsg"></div>
+      <button class="btn btn-ghost" id="backBtn">Look back through the ten</button>
+    </div>
+
+    <footer class="foot">
+      <p>Mr Pumpkin &middot; Pick Your Perfect Pumpkin Near Derby</p>
+      <p>Hunt built by <a href="https://smartcoretechnology.co.uk" rel="noopener">SmartCore Technology</a></p>
+    </footer>
+  </section>
+
 </main>
 
 <script src="/assets/pumpkins.js"></script>
@@ -106,10 +163,32 @@
 <script>
 (function () {
   "use strict";
-  var grid = document.getElementById("grid");
 
-  /* Tiles are sized against the biggest variety in the list, so the grid
-     shows real relative size at a glance. */
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  var grid = document.getElementById("grid");
+  var screens = {
+    start: document.getElementById("screenStart"),
+    email: document.getElementById("screenEmail"),
+    hunt:  document.getElementById("screenHunt"),
+    done:  document.getElementById("screenDone"),
+  };
+
+  function show(name) {
+    Object.keys(screens).forEach(function (k) {
+      screens[k].classList.toggle("hide", k !== name);
+    });
+    /* The counter and pips are meaningless before the hunt begins. */
+    var hunting = name === "hunt" || name === "done";
+    document.querySelector("[data-count]").classList.toggle("hide", !hunting);
+    document.querySelector("[data-pips]").classList.toggle("hide", !hunting);
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- the grid ---------- */
+
+  /* Tiles are sized against the biggest variety, so the grid shows real
+     relative size at a glance - a Jill Be Little really is a quarter of a
+     Grizzly Bear, and that helps you spot it in the field. */
   var maxScale = Math.max.apply(null, window.PUMPKINS.map(function (p) { return p.scale; }));
 
   function tile(p) {
@@ -118,71 +197,112 @@
     el.className = "tile " + (found ? "found" : "locked");
     if (found) el.href = "/p/" + p.code;
 
-    var h = Math.round(38 + (p.scale / maxScale) * 58);
-    var art = '<div class="tile-art"><img src="' + Hunt.artFor(p) + '" alt="" style="height:' + h + 'px" loading="lazy"></div>';
-    var name = found ? p.name : "Not found yet";
-    var sub = found ? p.bestFor : (p.hint || "Keep looking");
-
-    var badge = found
-      ? '<div class="badge badge-found" aria-hidden="true">&#10003;</div>'
-      : '<div class="badge badge-locked" aria-hidden="true">?</div>';
-
+    var h = Math.round(40 + (p.scale / maxScale) * 60);
     el.innerHTML =
-      art +
-      '<div class="tile-name">' + name + "</div>" +
-      '<div class="tile-sub">' + sub + "</div>" +
-      badge;
+      '<div class="tile-art"><img src="' + Hunt.artFor(p) + '" alt="" style="height:' + h + 'px" loading="lazy"></div>' +
+      '<div class="tile-name">' + (found ? p.name : "Not found yet") + "</div>" +
+      '<div class="tile-sub">' + (found ? p.bestFor : (p.hint || "Keep looking")) + "</div>" +
+      (found
+        ? '<div class="badge badge-found" aria-hidden="true">&#10003;</div>'
+        : '<div class="badge badge-locked" aria-hidden="true">?</div>');
+
     if (!found) el.setAttribute("aria-label", "Not found yet. " + (p.hint || ""));
     return el;
   }
 
-  function paint() {
+  function paintGrid() {
     grid.innerHTML = "";
     window.PUMPKINS.forEach(function (p) { grid.appendChild(tile(p)); });
 
     var n = Hunt.foundCount();
-    document.getElementById("intro").classList.toggle("hide", n > 0);
+    var left = Hunt.total() - n;
+    var complete = Hunt.isComplete();
 
-    var done = Hunt.isComplete();
-    document.getElementById("finish").classList.toggle("hide", !done);
-    /* Once per arrival, not once per repaint - nobody wants confetti every
-       time they tap back to the grid. */
-    if (done && !paint.celebrated) { paint.celebrated = true; Hunt.celebrate(); }
+    document.getElementById("gridSub").textContent = complete
+      ? "Every one of them. Tap any to read it again."
+      : n === 0
+        ? "Ten to find. Scan the sign beside any pumpkin."
+        : left + (left === 1 ? " still out there." : " still out there.") + " Tap any you’ve found to read it again.";
 
-    var sub = document.getElementById("gridSub");
-    if (n === 0) sub.textContent = "Ten to find. Scan the sign beside any pumpkin to start.";
-    else if (Hunt.isComplete()) sub.textContent = "Every one of them. Tap any to read it again.";
-    else sub.textContent = (Hunt.total() - n) + " still out there. Tap any you’ve found to read it again.";
+    document.getElementById("finishBtn").disabled = !complete;
+    document.getElementById("finishHint").textContent = complete
+      ? "Nicely done — finish up and we’ll send your guide."
+      : left + (left === 1 ? " more to find." : " more to find.");
 
     Hunt.paintProgress();
   }
 
+  /* ---------- routing between screens ---------- */
+
+  function route() {
+    if (Hunt.hasFinished()) { paintDone(); show("done"); return; }
+    if (!Hunt.hasStarted()) { show("start"); return; }
+    paintGrid();
+    show("hunt");
+  }
+
+  function paintDone() {
+    var saved = Hunt.email();
+    document.getElementById("doneSaved").classList.toggle("hide", !saved);
+    document.getElementById("doneAsk").classList.toggle("hide", !!saved);
+    if (saved) {
+      document.getElementById("doneSavedTo").textContent = "Your guide is on its way to " + saved + ".";
+    }
+    Hunt.paintProgress();
+  }
+
+  /* ---------- start ---------- */
+
   document.getElementById("startBtn").addEventListener("click", function () {
-    document.getElementById("gridHeading").scrollIntoView({ behavior: "smooth", block: "start" });
+    show("email");
   });
 
-  /* Manual entry. Same validation as a scan - it just skips the camera. */
-  document.getElementById("codeForm").addEventListener("submit", function (e) {
+  document.getElementById("skipBtn").addEventListener("click", function () {
+    Hunt.start();
+    paintGrid();
+    show("hunt");
+  });
+
+  document.getElementById("earlyForm").addEventListener("submit", function (e) {
     e.preventDefault();
-    var msg = document.getElementById("codeMsg");
-    var raw = document.getElementById("codeInput").value.trim().toLowerCase();
-    var p = Hunt.byCode(raw);
-    if (!p) {
-      msg.className = "msg msg-bad";
-      msg.textContent = "That code isn’t one of ours. Check it and try again.";
+    var field = document.getElementById("earlyEmail");
+    var value = field.value.trim();
+    /* An empty box here means the same as skipping - never a dead end. */
+    if (value && !EMAIL_RE.test(value)) {
+      field.focus();
       return;
     }
-    window.location.href = "/p/" + p.code;
+    if (value) Hunt.setEmail(value);
+    Hunt.start();
+    paintGrid();
+    show("hunt");
   });
 
-  document.getElementById("guideForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var btn = document.getElementById("guideBtn");
-    var msg = document.getElementById("guideMsg");
-    var email = document.getElementById("guideEmail").value.trim();
-    var name = document.getElementById("guideName").value.trim();
+  /* ---------- finish ---------- */
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+  document.getElementById("finishBtn").addEventListener("click", function () {
+    if (!Hunt.isComplete()) return;
+    Hunt.finish();
+    Hunt.track("complete", {});
+    paintDone();
+    show("done");
+    Hunt.celebrate();
+
+    /* Address already in hand from the start screen - send without asking
+       again. A failure here is silent on purpose: the guide is on screen
+       either way, and nobody wants an error at the happy ending. */
+    var saved = Hunt.email();
+    if (saved) Hunt.sendGuide(saved, "").catch(function () {});
+  });
+
+  document.getElementById("doneForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var btn = document.getElementById("doneBtn");
+    var msg = document.getElementById("doneMsg");
+    var email = document.getElementById("doneEmail").value.trim();
+    var name = document.getElementById("doneName").value.trim();
+
+    if (!EMAIL_RE.test(email)) {
       msg.className = "msg msg-bad";
       msg.textContent = "That email doesn’t look quite right.";
       return;
@@ -198,33 +318,42 @@
     msg.className = "";
     msg.textContent = "";
 
-    fetch("/api/send-guide", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email,
-        name: name,
-        device: Hunt.deviceId(),
-        found: Object.keys(Hunt.found()),
-      }),
-    })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; }); })
-      .then(function (res) {
-        if (!res.ok) throw new Error(res.body && res.body.error ? res.body.error : "send failed");
+    Hunt.sendGuide(email, name)
+      .then(function (ok) {
+        if (!ok) throw new Error("send failed");
+        Hunt.setEmail(email);
         msg.className = "msg msg-ok";
         msg.textContent = "Sent. Have a look in your inbox — check spam if it’s shy.";
-        document.getElementById("guideForm").classList.add("hide");
+        document.getElementById("doneAsk").classList.add("hide");
       })
       .catch(function () {
         btn.disabled = false;
-        btn.textContent = "Email my guide";
+        btn.textContent = "Send me my guide";
         msg.className = "msg msg-bad";
-        /* Never a dead end: the guide is on screen regardless. */
         msg.textContent = "Couldn’t send that just now. Your collection is still saved on this phone.";
       });
   });
 
-  paint();
+  document.getElementById("backBtn").addEventListener("click", function () {
+    paintGrid();
+    show("hunt");
+  });
+
+  /* ---------- manual code entry ---------- */
+
+  document.getElementById("codeForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var msg = document.getElementById("codeMsg");
+    var p = Hunt.byCode(document.getElementById("codeInput").value.trim().toLowerCase());
+    if (!p) {
+      msg.className = "msg msg-bad";
+      msg.textContent = "That code isn’t one of ours. Check it and try again.";
+      return;
+    }
+    window.location.href = "/p/" + p.code;
+  });
+
+  route();
 })();
 </script>
 </body>

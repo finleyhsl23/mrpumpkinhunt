@@ -9,7 +9,7 @@
  * Bump CACHE when anything in SHELL changes, or phones will keep serving the
  * old copy until their cache is cleared.
  */
-var CACHE = "mrpumpkin-v2";
+var CACHE = "mrpumpkin-v3";
 
 var SHELL = [
   "/",

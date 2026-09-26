@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Found one! &middot; Mr Pumpkin</title>
-<meta name="theme-color" content="#16101d">
+<meta name="theme-color" content="#140d08">
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
@@ -76,7 +76,7 @@
     var left = Hunt.total() - n;
 
     var next = Hunt.isComplete()
-      ? '<a class="btn btn-primary" href="/">That&rsquo;s all ten &mdash; see them</a>'
+      ? '<a class="btn btn-primary" href="/">That&rsquo;s all ten &mdash; finish the hunt</a>'
       : '<a class="btn btn-primary" href="/">' + left + (left === 1 ? " left to find" : " more to find") + "</a>";
 
     main.innerHTML =
@@ -113,10 +113,10 @@
   var isNew = Hunt.markFound(pumpkin.slug);
   render(pumpkin, isNew);
 
-  if (isNew && Hunt.isComplete()) {
-    Hunt.track("complete", {});
-    Hunt.celebrate();
-  }
+  /* Scanning a sign counts as starting the hunt - plenty of visitors never
+     see the board at the gate. hasStarted() also infers this from the find
+     count, but recording it makes the intent explicit. */
+  Hunt.start();
 })();
 </script>
 </body>

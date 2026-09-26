@@ -9,25 +9,28 @@
  * Pumpkin site means editing this block and very little else.
  */
 :root {
-  --night:      #140f1c;
-  --night-2:    #1d1629;
-  --night-3:    #261d36;
-  --raise:      rgba(255, 255, 255, 0.055);
-  --line:       rgba(255, 255, 255, 0.09);
-  --line-warm:  rgba(242, 129, 29, 0.28);
-  --ink:        #f8f1e7;
-  --muted:      #b6a8c1;
-  --dim:        #7d7189;
-  --orange:     #f2811d;
-  --orange-2:   #ff9c3d;
-  --gold:       #f7ca57;
-  --green:      #74c65e;
-  --pink:       #ec8fae;
-  --wrap:       660px;
-  --radius:     20px;
-  --radius-sm:  14px;
+  /* Taken from mrpumpkin.pages.dev: a warm near-black brown, bright orange
+     as the single accent, cream text. Everything else in this file derives
+     from these - to reskin, edit here and nowhere else. */
+  --night:      #140d08;
+  --night-2:    #241710;
+  --night-3:    #33200f;
+  --raise:      rgba(255, 236, 214, 0.055);
+  --line:       rgba(255, 226, 196, 0.12);
+  --line-warm:  rgba(249, 115, 22, 0.42);
+  --ink:        #f8efe4;
+  --muted:      #c3ad98;
+  --dim:        #8d7864;
+  --orange:     #f97316;
+  --orange-2:   #fb9e3e;
+  --orange-3:   #fdc270;
+  --green:      #8bc766;
+  --cream:      #fbe7c8;
+  --wrap:       680px;
+  --radius:     24px;
+  --radius-sm:  16px;
   --tap:        54px;  /* minimum tap target - gloves, mud, cold hands */
-  --shadow:     0 18px 40px -22px rgba(0, 0, 0, 0.9);
+  --shadow:     0 22px 48px -26px rgba(0, 0, 0, 0.95);
 }
 
 * { box-sizing: border-box; }
@@ -43,12 +46,13 @@ body {
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
   position: relative;
-  /* A dusk sky: warm glow low on the horizon, cooler overhead. */
+  /* Warm brown dusk with an orange ambient glow, the same feel as the main
+     Mr Pumpkin site rather than the plum night this started as. */
   background:
-    radial-gradient(120% 62% at 50% 118%, rgba(242, 129, 29, 0.3) 0%, rgba(242, 129, 29, 0.07) 42%, transparent 68%),
-    radial-gradient(90% 46% at 12% -8%, rgba(126, 84, 178, 0.28), transparent 62%),
-    radial-gradient(80% 40% at 92% 4%, rgba(60, 96, 140, 0.22), transparent 60%),
-    linear-gradient(180deg, #120d1a 0%, #170f22 46%, #1d1224 100%);
+    radial-gradient(130% 68% at 50% 116%, rgba(249, 115, 22, 0.34) 0%, rgba(249, 115, 22, 0.09) 44%, transparent 70%),
+    radial-gradient(95% 50% at 6% -6%, rgba(249, 115, 22, 0.2), transparent 62%),
+    radial-gradient(85% 44% at 96% 2%, rgba(180, 83, 20, 0.16), transparent 60%),
+    linear-gradient(180deg, #1a1009 0%, #150d07 48%, #110a05 100%);
   background-attachment: fixed;
 }
 
@@ -61,13 +65,13 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background-image:
-    radial-gradient(1.6px 1.6px at 18% 12%, rgba(255,255,255,.55), transparent 60%),
-    radial-gradient(1.2px 1.2px at 74% 8%,  rgba(255,255,255,.4),  transparent 60%),
+    radial-gradient(1.6px 1.6px at 18% 12%, rgba(255,234,204,.5), transparent 60%),
+    radial-gradient(1.2px 1.2px at 74% 8%,  rgba(255,226,190,.36), transparent 60%),
     radial-gradient(1.8px 1.8px at 42% 22%, rgba(255,241,214,.45), transparent 60%),
-    radial-gradient(1.1px 1.1px at 88% 26%, rgba(255,255,255,.34), transparent 60%),
-    radial-gradient(1.4px 1.4px at 8% 34%,  rgba(255,255,255,.3),  transparent 60%),
+    radial-gradient(1.1px 1.1px at 88% 26%, rgba(255,230,198,.3), transparent 60%),
+    radial-gradient(1.4px 1.4px at 8% 34%,  rgba(255,226,190,.26), transparent 60%),
     radial-gradient(1.2px 1.2px at 60% 38%, rgba(255,241,214,.28), transparent 60%),
-    radial-gradient(1.5px 1.5px at 30% 6%,  rgba(255,255,255,.4),  transparent 60%);
+    radial-gradient(1.5px 1.5px at 30% 6%,  rgba(255,226,190,.36), transparent 60%);
   mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 62%);
 }
 
@@ -106,7 +110,7 @@ a { color: var(--orange-2); }
   position: sticky;
   top: 0;
   z-index: 30;
-  background: linear-gradient(180deg, rgba(20,15,28,.97) 60%, rgba(20,15,28,.86));
+  background: linear-gradient(180deg, rgba(20,13,8,.97) 60%, rgba(20,13,8,.86));
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--line);
   padding-top: env(safe-area-inset-top);
@@ -129,12 +133,12 @@ a { color: var(--orange-2); }
 .count {
   margin-left: auto;
   font-weight: 600; font-size: 14px;
-  color: var(--gold);
+  color: var(--orange-3);
   white-space: nowrap;
   padding: 5px 12px;
   border-radius: 99px;
-  background: rgba(247, 202, 87, .1);
-  border: 1px solid rgba(247, 202, 87, .22);
+  background: rgba(249, 115, 22, .14);
+  border: 1px solid rgba(249, 115, 22, .3);
 }
 
 /* Ten pips rather than a bar: you can count what is left at a glance, which
@@ -154,7 +158,7 @@ a { color: var(--orange-2); }
   transition: background .45s ease, box-shadow .45s ease;
 }
 .pip.on {
-  background: linear-gradient(90deg, var(--orange), var(--gold));
+  background: linear-gradient(90deg, var(--orange), var(--orange-3));
   box-shadow: 0 0 10px rgba(242, 129, 29, .5);
 }
 
@@ -286,9 +290,9 @@ p  { margin: 0; line-height: 1.62; color: var(--muted); }
   font-size: 12.5px; font-weight: 600;
   border: 1px solid;
 }
-.tag-eat   { color: var(--green);  border-color: rgba(116,198,94,.38); background: rgba(116,198,94,.1); }
+.tag-eat   { color: var(--green);    border-color: rgba(139,199,102,.4); background: rgba(139,199,102,.1); }
 .tag-carve { color: var(--orange-2); border-color: rgba(242,129,29,.4); background: rgba(242,129,29,.1); }
-.tag-show  { color: var(--pink);   border-color: rgba(236,143,174,.38); background: rgba(236,143,174,.1); }
+.tag-show  { color: var(--orange-3); border-color: rgba(253,194,112,.36); background: rgba(253,194,112,.1); }
 
 /* ---------- the reveal ---------- */
 
@@ -321,7 +325,7 @@ p  { margin: 0; line-height: 1.62; color: var(--muted); }
   text-align: center;
   font-size: 12.5px; font-weight: 700;
   letter-spacing: .17em; text-transform: uppercase;
-  color: var(--gold);
+  color: var(--orange-3);
 }
 .found-flash.quiet { color: var(--dim); }
 
@@ -329,14 +333,14 @@ p  { margin: 0; line-height: 1.62; color: var(--muted); }
   position: relative;
   padding: 15px 17px 15px 19px;
   border-radius: var(--radius-sm);
-  background: rgba(247,202,87,.055);
-  border: 1px solid rgba(247,202,87,.15);
-  font-size: 15px; color: #e6dbc6;
+  background: rgba(249,115,22,.075);
+  border: 1px solid rgba(249,115,22,.2);
+  font-size: 15px; color: var(--cream);
   line-height: 1.6;
 }
 .fact::before {
   content: ""; position: absolute; left: 0; top: 13px; bottom: 13px;
-  width: 3px; border-radius: 99px; background: var(--gold);
+  width: 3px; border-radius: 99px; background: var(--orange);
 }
 
 .meta-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
@@ -350,7 +354,7 @@ p  { margin: 0; line-height: 1.62; color: var(--muted); }
   border-radius: 50%;
   display: grid; place-items: center;
   font-size: 42px;
-  background: radial-gradient(closest-side, rgba(247,202,87,.26), transparent 76%);
+  background: radial-gradient(closest-side, rgba(249,115,22,.3), transparent 76%);
   animation: breathe 4s ease-in-out infinite;
 }
 .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
@@ -383,15 +387,15 @@ input[type="email"], input[type="text"] {
 }
 input::placeholder { color: #6b6076 }
 input:focus-visible, .btn:focus-visible, .tile:focus-visible {
-  outline: 3px solid var(--gold); outline-offset: 2px;
+  outline: 3px solid var(--orange-2); outline-offset: 2px;
 }
 .code-input { text-transform: lowercase; letter-spacing: .3em; text-align: center; font-weight: 600; font-size: 19px }
 .hint-text  { font-size: 13px; color: var(--dim) }
 .form-note  { font-size: 12px; color: #857a91; line-height: 1.55 }
 
 .msg { font-size: 14px; font-weight: 600; padding: 13px 15px; border-radius: var(--radius-sm) }
-.msg-ok  { background: rgba(116,198,94,.12); color: var(--green) }
-.msg-bad { background: rgba(236,143,174,.12); color: var(--pink) }
+.msg-ok  { background: rgba(139,199,102,.13); color: var(--green) }
+.msg-bad { background: rgba(249,115,22,.14); color: var(--orange-2) }
 
 /* ---------- offline + footer ---------- */
 
@@ -400,8 +404,8 @@ input:focus-visible, .btn:focus-visible, .tile:focus-visible {
   display: none; text-align: center;
   font-size: 13px; font-weight: 600;
   padding: 10px 16px;
-  background: rgba(247,202,87,.13);
-  color: var(--gold);
+  background: rgba(249,115,22,.16);
+  color: var(--orange-3);
 }
 body.is-offline .offline { display: block }
 
@@ -414,3 +418,67 @@ body.is-offline .offline { display: block }
 .foot a { color: #9b8fa6; text-decoration: none }
 
 .hide { display: none !important }
+
+/* ---------- screens ---------- */
+/* The hunt is one page in three states: start, hunting, finished. Screens
+   rather than separate documents so nothing needs the network to move
+   between them - out in the field there may not be any. */
+
+.screen { animation: riseIn .4s ease both }
+
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  padding: 30px 24px 26px;
+}
+.hero-card::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(90% 60% at 18% 0%, rgba(249,115,22,.16), transparent 62%);
+  pointer-events: none;
+}
+.hero-card > * { position: relative }
+
+.chips { display: flex; gap: 9px; flex-wrap: wrap }
+.chip {
+  flex: 1 1 0;
+  min-width: 94px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--raise);
+  border: 1px solid var(--line);
+}
+.chip b { display: block; font-size: 16px; font-weight: 700; color: var(--ink); white-space: nowrap }
+.chip span { display: block; font-size: 11.5px; color: var(--dim); margin-top: 2px; line-height: 1.35 }
+
+/* The email ask. Deliberately skippable: asking before anyone has had the
+   fun costs players, and a family stood in a field with no signal cannot
+   answer it at all. */
+.skip {
+  display: block;
+  width: 100%;
+  margin-top: 2px;
+  padding: 13px;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.skip:active { color: var(--muted) }
+
+.saved-note {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13px; font-weight: 600;
+  color: var(--green);
+}
+
+/* The finish button only becomes real once all ten are in. Showing it
+   greyed from the start tells a family there is an end to reach. */
+.finish-cta { margin-top: 22px }
+.finish-cta .btn[disabled] { opacity: .4 }
+.finish-hint { text-align: center; font-size: 13px; color: var(--dim); margin-top: 10px }

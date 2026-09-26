@@ -12,6 +12,9 @@
   var KEY = "mrpumpkin.progress.v1";
   var QUEUE_KEY = "mrpumpkin.queue.v1";
   var DEVICE_KEY = "mrpumpkin.device.v1";
+  var STARTED_KEY = "mrpumpkin.started.v1";
+  var EMAIL_KEY = "mrpumpkin.email.v1";
+  var FINISHED_KEY = "mrpumpkin.finished.v1";
 
   /* Private browsing, blocked site data and a handful of locked-down
    * corporate phones all make localStorage throw rather than return null.
@@ -129,6 +132,36 @@
     },
 
     deviceId: deviceId,
+
+    /* --- where the visitor is in the hunt ---------------------------------
+     * Three states: not started, hunting, finished. Held on the phone with
+     * everything else, so moving between them never needs a signal. */
+
+    hasStarted: function () { return safeGet(STARTED_KEY) === "1" || Hunt.foundCount() > 0; },
+    start: function () { safeSet(STARTED_KEY, "1"); },
+
+    /* Scanning a sign out in the field counts as starting - plenty of people
+     * will never see the board at the gate. */
+    email: function () { return safeGet(EMAIL_KEY) || ""; },
+    setEmail: function (value) { safeSet(EMAIL_KEY, String(value || "").trim()); },
+
+    hasFinished: function () { return safeGet(FINISHED_KEY) === "1"; },
+    finish: function () { safeSet(FINISHED_KEY, "1"); },
+
+    /* Sends the guide. Resolves with true on success; the caller decides
+     * what to tell the visitor, because the answer differs by screen. */
+    sendGuide: function (email, name) {
+      return fetch("/api/send-guide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          name: name || "",
+          device: deviceId(),
+          found: Object.keys(Hunt.found()),
+        }),
+      }).then(function (r) { return r.ok; });
+    },
 
     /* Paints the sticky count and the row of pips on every page. Ten pips
      * rather than a percentage bar, because a parent can count what is left

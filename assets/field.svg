@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" width="1200" height="220" preserveAspectRatio="none">
   <!-- Decorative horizon: rolling field, a bare tree, a few pumpkins sat in
        the rows. Sits behind everything at the foot of the page. -->
-  <path d="M0 132c120-26 210-12 318 6 96 16 176 6 268-12 104-20 196-14 300 8 92 20 194 16 314-8v104H0z" fill="#0f0a16"/>
-  <path d="M0 160c140-22 236-8 352 10 110 17 198 6 300-12 96-17 190-8 292 14 84 18 172 14 256-4v52H0z" fill="#0a0710"/>
-  <g fill="#0a0710">
+  <path d="M0 132c120-26 210-12 318 6 96 16 176 6 268-12 104-20 196-14 300 8 92 20 194 16 314-8v104H0z" fill="#180f08"/>
+  <path d="M0 160c140-22 236-8 352 10 110 17 198 6 300-12 96-17 190-8 292 14 84 18 172 14 256-4v52H0z" fill="#100a05"/>
+  <g fill="#100a05">
     <ellipse cx="128" cy="150" rx="26" ry="16"/><ellipse cx="146" cy="151" rx="20" ry="13"/>
     <ellipse cx="412" cy="140" rx="30" ry="18"/><ellipse cx="436" cy="142" rx="22" ry="14"/>
     <ellipse cx="792" cy="146" rx="24" ry="15"/><ellipse cx="812" cy="147" rx="18" ry="12"/>
     <ellipse cx="1042" cy="136" rx="28" ry="17"/><ellipse cx="1064" cy="138" rx="20" ry="13"/>
   </g>
-  <g stroke="#0a0710" stroke-width="7" stroke-linecap="round" fill="none">
+  <g stroke="#100a05" stroke-width="7" stroke-linecap="round" fill="none">
     <path d="M980 140V66"/>
     <path d="M980 92c-14-16-30-22-44-22M980 84c14-18 32-24 46-22M980 110c-12-12-26-16-38-16M980 104c12-14 26-18 38-16"/>
   </g>
