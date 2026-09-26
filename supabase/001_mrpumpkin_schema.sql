@@ -7,6 +7,21 @@
 --
 --     Supabase > Project Settings > API > Exposed schemas > add `mrpumpkin`
 --
+-- On this project the dashboard toggle would not save, so it was set in SQL
+-- instead. That list is now SQL-managed: to add another schema later, edit
+-- and re-run this statement with the FULL list, not just the new one.
+--
+--     alter role authenticator set pgrst.db_schemas =
+--       'public, graphql_public, smartrv, smartfitsinstallationsltd,
+--        hassalls, holidaymanagement, mrpumpkin';
+--     notify pgrst, 'reload config';
+--     notify pgrst, 'reload schema';
+--
+-- BOTH notifications are needed and they are not the same thing. 'reload
+-- config' picks up the schema list; 'reload schema' rebuilds the table cache.
+-- With only the first you get PGRST205 - "could not find the table ... in the
+-- schema cache" - which reads like the schema is still missing when it is not.
+--
 -- PostgREST will not serve a schema that is not on that list. The service
 -- role bypasses row-level security, not that. Miss it and every write returns
 -- an error the Pages functions swallow - deliberately, so a database problem

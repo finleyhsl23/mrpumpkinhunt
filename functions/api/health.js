@@ -40,11 +40,18 @@ export async function onRequestGet({ env }) {
         checks.hunts_saved = parseInt((res.headers.get("content-range") || "").split("/")[1] || "0", 10);
       } else {
         const body = await res.text().catch(() => "");
-        checks.database_detail = `${res.status}: ${body.slice(0, 200)}`;
-        /* By far the most likely cause, and the message PostgREST returns for
-           it is easy to miss among the JSON. */
-        if (res.status === 404 || res.status === 406 || /schema/i.test(body)) {
-          checks.database_detail += "  >> add 'mrpumpkin' to Exposed schemas in Supabase (Settings > API)";
+        checks.database_detail = `${res.status}: ${body.slice(0, 400)}`;
+
+        /* PostgREST has two distinct failures here that look alike and need
+           different fixes, and conflating them cost a round of guessing:
+             PGRST106 - the schema is not in the Exposed schemas list.
+             PGRST205 - it IS exposed, but the schema cache is stale, which a
+                        'reload schema' notification fixes. A 'reload config'
+                        does not: they are separate signals. */
+        if (body.includes("PGRST106")) {
+          checks.database_detail += "  >> add 'mrpumpkin' to Exposed schemas (Supabase > Settings > API)";
+        } else if (body.includes("PGRST205")) {
+          checks.database_detail += "  >> exposed but cached: run  notify pgrst, 'reload schema';  in the SQL editor";
         }
       }
     } catch (err) {
