@@ -170,6 +170,18 @@ The browser never talks to Supabase. Both keys stay in the Pages functions,
 which is why there is no anon key in the client to lift, no RLS policy to get
 subtly wrong, and no need to add `mrpumpkin` to Supabase's exposed schemas.
 
+### Is it configured?
+
+Open **`/api/health`** in a browser. It reports which environment variables
+are present (booleans only - no key or secret is ever returned) and names the
+sending domain, which must be verified in Resend or every email is rejected
+before it is even logged.
+
+That endpoint exists because the first silent failure cost an evening: the
+guide email was not sending, nothing appeared in the Resend dashboard, and
+there was no way to tell from a phone whether the cause was a missing key, an
+unverified domain, or an undeployed function.
+
 ### Database
 
 Run `supabase/001_mrpumpkin_schema.sql` once. It creates the `mrpumpkin`

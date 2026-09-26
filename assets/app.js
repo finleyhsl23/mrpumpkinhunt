@@ -86,6 +86,15 @@
       try { window.localStorage.removeItem(KEY); } catch (e) { /* nothing to clear */ }
     },
 
+    /* Clears the whole hunt - progress, email and the started/finished flags
+     * - so the phone is ready for the next family. The device id is kept, or
+     * the patch's visitor counts would double every time somebody exits. */
+    resetAll: function () {
+      [KEY, STARTED_KEY, EMAIL_KEY, FINISHED_KEY].forEach(function (k) {
+        try { window.localStorage.removeItem(k); } catch (e) { /* nothing to clear */ }
+      });
+    },
+
     /* Best-effort telemetry. Never blocks the interface, never surfaces an
      * error: if it fails it goes in a queue and is retried when the phone
      * next has a signal, which for most families is back at the gate. */
@@ -160,7 +169,13 @@
           device: deviceId(),
           found: Object.keys(Hunt.found()),
         }),
-      }).then(function (r) { return r.ok; });
+      }).then(function (r) {
+        /* Hand back why, not just whether: a deployment missing its Resend
+           key looks identical to a network blip otherwise. */
+        return r.json().catch(function () { return {}; }).then(function (body) {
+          return { ok: r.ok, reason: body && body.error ? body.error : "" };
+        });
+      });
     },
 
     /* Paints the sticky count and the row of pips on every page. Ten pips

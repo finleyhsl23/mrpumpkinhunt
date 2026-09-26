@@ -178,6 +178,19 @@
 
       <div id="doneMsg"></div>
       <button class="btn btn-ghost" id="backBtn">View your 10</button>
+      <button class="skip" id="exitBtn">Exit hunt</button>
+
+      <!-- Exiting wipes the hunt from this phone, which is how you hand it to
+           the next family. Worth asking once, and worth flagging if they
+           never took the guide. -->
+      <div class="confirm hide" id="confirmExit">
+        <h3>Exit and clear this hunt?</h3>
+        <p id="exitBody"></p>
+        <div class="row">
+          <button class="btn btn-ghost" id="exitNo">Stay here</button>
+          <button class="btn btn-primary" id="exitYes">Exit hunt</button>
+        </div>
+      </div>
     </div>
 
     <footer class="foot">
@@ -352,6 +365,18 @@
     doFinish();
   });
 
+  /* Maps the server's reason onto something a parent can read, while staying
+     specific enough to debug a misconfigured deployment from a phone. */
+  function sendFailureText(reason) {
+    if (reason === "email is not configured") {
+      return "The guide email isn’t switched on yet \u2014 your collection is still saved on this phone.";
+    }
+    if (reason === "too many requests, try again later") {
+      return "That’s a few tries in a row \u2014 give it a minute and try again.";
+    }
+    return "Couldn’t send that just now. Your collection is still saved on this phone.";
+  }
+
   function doFinish() {
     Hunt.finish();
     Hunt.track("complete", {});
@@ -363,8 +388,21 @@
     /* Address already in hand from the start screen - send without asking
        again. A failure here is silent on purpose: the guide is on screen
        either way, and nobody wants an error at the happy ending. */
+    /* They gave an address on the way in, so send without asking again. If
+       it fails, say so and offer a retry - claiming "on its way" when it is
+       not is worse than admitting it. */
     var saved = Hunt.email();
-    if (saved) Hunt.sendGuide(saved, "").catch(function () {});
+    if (saved) {
+      Hunt.sendGuide(saved, "").then(function (res) {
+        if (res && res.ok) return;
+        document.getElementById("doneSaved").classList.add("hide");
+        document.getElementById("doneAsk").classList.remove("hide");
+        document.getElementById("doneEmail").value = saved;
+        var msg = document.getElementById("doneMsg");
+        msg.className = "msg msg-bad";
+        msg.textContent = sendFailureText(res && res.reason);
+      }).catch(function () {});
+    }
   }
 
   document.getElementById("doneForm").addEventListener("submit", function (e) {
@@ -391,24 +429,44 @@
     msg.textContent = "";
 
     Hunt.sendGuide(email, name)
-      .then(function (ok) {
-        if (!ok) throw new Error("send failed");
+      .then(function (res) {
+        if (!res || !res.ok) throw new Error((res && res.reason) || "send failed");
         Hunt.setEmail(email);
         msg.className = "msg msg-ok";
         msg.textContent = "Sent. Have a look in your inbox — check spam if it’s shy.";
         document.getElementById("doneAsk").classList.add("hide");
       })
-      .catch(function () {
+      .catch(function (err) {
         btn.disabled = false;
         btn.textContent = "Send me my guide";
         msg.className = "msg msg-bad";
-        msg.textContent = "Couldn’t send that just now. Your collection is still saved on this phone.";
+        msg.textContent = sendFailureText(err && err.message);
       });
   });
 
   document.getElementById("backBtn").addEventListener("click", function () {
     paintGrid();
     show("hunt");
+  });
+
+  document.getElementById("exitBtn").addEventListener("click", function () {
+    document.getElementById("exitBody").textContent = Hunt.email()
+      ? "Your hunt will be cleared from this phone. Your guide has been emailed, so you still have it."
+      : "Your hunt will be cleared from this phone, and you haven’t had the guide emailed \u2014 so it will be gone for good.";
+    document.getElementById("confirmExit").classList.remove("hide");
+  });
+
+  document.getElementById("exitNo").addEventListener("click", function () {
+    document.getElementById("confirmExit").classList.add("hide");
+  });
+
+  document.getElementById("exitYes").addEventListener("click", function () {
+    Hunt.resetAll();
+    document.getElementById("confirmExit").classList.add("hide");
+    document.getElementById("doneMsg").textContent = "";
+    document.getElementById("doneMsg").className = "";
+    document.getElementById("doneAsk").classList.add("hide");
+    show("start");
   });
 
   /* ---------- the scanner ----------------------------------------------
