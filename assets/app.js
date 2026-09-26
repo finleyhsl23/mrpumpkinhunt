@@ -79,6 +79,7 @@
       found[slug] = new Date().toISOString();
       safeSet(KEY, JSON.stringify(found));
       Hunt.track("find", { slug: slug });
+      Hunt.saveRemote();
       return true;
     },
 
@@ -169,6 +170,46 @@
 
     hasFinished: function () { return safeGet(FINISHED_KEY) === "1"; },
     finish: function () { safeSet(FINISHED_KEY, "1"); },
+
+    /* --- progress kept against an email -------------------------------
+     * Only for visitors who chose to give an address. Everyone else stays
+     * entirely on their own phone, as before. Both calls fail soft: the hunt
+     * has never needed the network and still does not. */
+
+    loadRemote: function (email) {
+      return fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "load", email: email }),
+      })
+        .then(function (r) { return r.json(); })
+        .catch(function () { return { found: null }; });
+    },
+
+    saveRemote: function () {
+      var email = Hunt.email();
+      if (!email || !navigator.onLine) return Promise.resolve(false);
+      return fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "save", email: email, found: Object.keys(Hunt.found()) }),
+      })
+        .then(function (r) { return r.ok; })
+        .catch(function () { return false; });
+    },
+
+    /* Takes on a hunt fetched from the server. Merged rather than replaced:
+     * somebody may have found one or two on this phone before entering an
+     * address, and losing those would be indefensible. */
+    adopt: function (slugs) {
+      var found = Hunt.found();
+      (slugs || []).forEach(function (slug) {
+        if (!Object.prototype.hasOwnProperty.call(found, slug) && Hunt.bySlug(slug)) {
+          found[slug] = new Date().toISOString();
+        }
+      });
+      safeSet(KEY, JSON.stringify(found));
+    },
 
     /* Sends the guide. Resolves with true on success; the caller decides
      * what to tell the visitor, because the answer differs by screen. */

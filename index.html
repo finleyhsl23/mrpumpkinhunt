@@ -69,11 +69,26 @@
           <label for="earlyEmail">Grown-up&rsquo;s email</label>
           <input type="email" id="earlyEmail" autocomplete="email" maxlength="160" placeholder="you@example.com">
         </div>
-        <button class="btn btn-primary" type="submit">Save it &amp; start hunting</button>
+        <button class="btn btn-primary" type="submit" id="earlyBtn">Save it &amp; start hunting</button>
       </form>
       <button class="skip" id="skipBtn">Skip &mdash; just let me start</button>
       <p class="form-note">A grown-up should fill this in. We use the address to send your guide and nothing else.
         <a href="/privacy">How we handle it</a>.</p>
+    </div>
+  </section>
+
+  <!-- ==================== 2b. BEEN HERE BEFORE ==================== -->
+  <section class="screen hide" id="screenReturning" style="padding-top:22px">
+    <div class="card card-warm stack">
+      <div class="trophy">
+        <div class="trophy-ring" aria-hidden="true">&#127810;</div>
+        <span class="eyebrow" style="justify-content:center">We know that address</span>
+        <h1 style="margin-top:10px;font-size:clamp(26px,7vw,34px)">You&rsquo;ve been here before.</h1>
+      </div>
+      <p id="returningBody"></p>
+      <button class="btn btn-primary" id="continueBtn">Carry on where I left off</button>
+      <button class="btn btn-ghost" id="startOverBtn">Start a fresh hunt</button>
+      <p class="form-note">Starting fresh clears the old one. Your guide, if we sent you one, stays in your inbox either way.</p>
     </div>
   </section>
 
@@ -212,6 +227,7 @@
   var screens = {
     start: document.getElementById("screenStart"),
     email: document.getElementById("screenEmail"),
+    returning: document.getElementById("screenReturning"),
     hunt:  document.getElementById("screenHunt"),
     scan:  document.getElementById("screenScan"),
     done:  document.getElementById("screenDone"),
@@ -222,7 +238,7 @@
       screens[k].classList.toggle("hide", k !== name);
     });
     /* The counter and pips are meaningless before the hunt begins. */
-    var hunting = name !== "start" && name !== "email";
+    var hunting = name !== "start" && name !== "email" && name !== "returning";
     if (name !== "scan") Scanner.stop();
     document.querySelector("[data-count]").classList.toggle("hide", !hunting);
     document.querySelector("[data-pips]").classList.toggle("hide", !hunting);
@@ -325,16 +341,70 @@
   document.getElementById("earlyForm").addEventListener("submit", function (e) {
     e.preventDefault();
     var field = document.getElementById("earlyEmail");
+    var btn = document.getElementById("earlyBtn");
     var value = field.value.trim();
+
     /* An empty box here means the same as skipping - never a dead end. */
-    if (value && !EMAIL_RE.test(value)) {
-      field.focus();
-      return;
-    }
-    if (value) Hunt.setEmail(value);
+    if (!value) { beginHunt(); return; }
+    if (!EMAIL_RE.test(value)) { field.focus(); return; }
+
+    Hunt.setEmail(value);
+    Hunt.start();
+
+    /* Offline, or the lookup fails: start as normal. Nobody stands in a
+       field waiting on a spinner. */
+    if (!navigator.onLine) { beginHunt(); return; }
+
+    btn.disabled = true;
+    btn.textContent = "Just a moment\u2026";
+
+    var settled = false;
+    var go = function (prior) {
+      if (settled) return;
+      settled = true;
+      btn.disabled = false;
+      btn.textContent = "Save it & start hunting";
+      if (prior && prior.length) {
+        returning = prior;
+        document.getElementById("returningBody").textContent =
+          "Last time you found " + prior.length + " of " + Hunt.total() +
+          ". Carry on from there, or wipe it and start again.";
+        show("returning");
+      } else {
+        beginHunt();
+      }
+    };
+
+    /* Hard ceiling on the wait. Most lookups answer in well under a second,
+       and a first-time visitor - who by definition has nothing to find - must
+       not be left staring at a button. Two seconds, then get on with it. */
+    setTimeout(function () { go(null); }, 2000);
+    Hunt.loadRemote(value).then(function (res) {
+      go(res && res.found);
+    }).catch(function () { go(null); });
+  });
+
+  var returning = null;
+
+  function beginHunt() {
     Hunt.start();
     paintGrid();
     show("hunt");
+  }
+
+  document.getElementById("continueBtn").addEventListener("click", function () {
+    Hunt.adopt(returning || []);
+    beginHunt();
+  });
+
+  document.getElementById("startOverBtn").addEventListener("click", function () {
+    /* Wipe the phone, then overwrite the saved copy so "start again" means
+       it on the next device too. */
+    var email = Hunt.email();
+    Hunt.reset();
+    Hunt.setEmail(email);
+    Hunt.saveRemote();
+    beginHunt();
   });
 
   /* ---------- finish ---------- */
@@ -379,6 +449,7 @@
 
   function doFinish() {
     Hunt.finish();
+    Hunt.saveRemote();
     Hunt.track("complete", {});
     paintDone();
     show("done");

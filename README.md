@@ -184,7 +184,8 @@ unverified domain, or an undeployed function.
 
 ### Database
 
-Run `supabase/001_mrpumpkin_schema.sql` once. It creates the `mrpumpkin`
+Run `supabase/001_mrpumpkin_schema.sql`, then
+`supabase/002_returning_visitors.sql`. It creates the `mrpumpkin`
 schema, two tables and two views. In November the whole thing is
 `drop schema mrpumpkin cascade;` and the core database is untouched.
 
@@ -193,6 +194,28 @@ Two views worth reading during the season:
 - `mrpumpkin.v_finds_by_pumpkin` — sorted least-found first. **The pumpkin at
   the top of that list probably has a sign in a bad spot.**
 - `mrpumpkin.v_daily` — hunts started, hunts finished, failed scans per day.
+- `mrpumpkin.v_returning` — how many saved hunts exist, how many finished, and
+  how many came back on a later visit.
+
+## Returning visitors
+
+Giving an email at the start saves progress against it, so the same hunt can
+be picked up on another phone or another day. Entering a known address offers
+**Carry on where I left off** or **Start a fresh hunt**.
+
+Three things worth knowing about how it behaves:
+
+- **Carrying on merges, it does not replace.** Somebody may have found one or
+  two on this phone before typing an address in, and losing those would be
+  indefensible.
+- **A lookup returns almost nothing.** An email typed into a field is not
+  verified, so a lookup answers only how many pumpkins that hunt found and
+  roughly when — never a name. Anything richer would let a stranger learn
+  something about somebody by guessing an address, and a child's first name is
+  exactly the thing not to hand out.
+- **It never blocks the start.** Offline, throttled, or simply slow: after two
+  seconds the hunt begins regardless. Nobody stands in a field waiting on a
+  spinner.
 
 ### Email
 
