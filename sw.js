@@ -9,7 +9,7 @@
  * Bump CACHE when anything in SHELL changes, or phones will keep serving the
  * old copy until their cache is cleared.
  */
-var CACHE = "mrpumpkin-v1";
+var CACHE = "mrpumpkin-v2";
 
 var SHELL = [
   "/",
@@ -20,6 +20,7 @@ var SHELL = [
   "/assets/app.js",
   "/assets/pumpkins.js",
   "/assets/favicon.svg",
+  "/assets/field.svg",
   "/assets/pumpkins/crown-prince.svg",
   "/assets/pumpkins/casperita.svg",
   "/assets/pumpkins/warty-goblin.svg",

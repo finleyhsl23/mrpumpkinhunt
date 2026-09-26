@@ -130,14 +130,45 @@
 
     deviceId: deviceId,
 
-    /* Paints the sticky count and bar present on every page. */
+    /* Paints the sticky count and the row of pips on every page. Ten pips
+     * rather than a percentage bar, because a parent can count what is left
+     * at a glance and a percentage never tells them that. */
     paintProgress: function () {
       var n = Hunt.foundCount();
       var total = Hunt.total();
+
       var count = document.querySelector("[data-count]");
-      var bar = document.querySelector("[data-bar]");
       if (count) count.textContent = n + " of " + total;
-      if (bar) bar.style.width = Math.round((n / total) * 100) + "%";
+
+      var pips = document.querySelector("[data-pips]");
+      if (!pips) return;
+      if (pips.children.length !== total) {
+        pips.innerHTML = "";
+        for (var i = 0; i < total; i++) pips.appendChild(document.createElement("span"));
+      }
+      for (var j = 0; j < total; j++) {
+        pips.children[j].className = "pip" + (j < n ? " on" : "");
+      }
+    },
+
+    /* A short burst of falling confetti for the moment all ten are in. Pure
+     * CSS animation on a handful of nodes, cleaned up after itself, and it
+     * respects prefers-reduced-motion via the stylesheet. */
+    celebrate: function () {
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      var colours = ["#f2811d", "#f7ca57", "#74c65e", "#ec8fae", "#ff9c3d"];
+      var box = document.createElement("div");
+      box.className = "confetti";
+      for (var i = 0; i < 40; i++) {
+        var bit = document.createElement("i");
+        bit.style.left = Math.random() * 100 + "%";
+        bit.style.background = colours[i % colours.length];
+        bit.style.animationDuration = (2.2 + Math.random() * 1.6) + "s";
+        bit.style.animationDelay = (Math.random() * 0.7) + "s";
+        box.appendChild(bit);
+      }
+      document.body.appendChild(box);
+      setTimeout(function () { box.remove(); }, 5200);
     },
 
     artFor: function (p) { return "/assets/pumpkins/" + p.slug + ".svg"; },

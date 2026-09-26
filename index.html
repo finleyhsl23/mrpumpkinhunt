@@ -17,10 +17,20 @@
 
 <header class="topbar">
   <div class="topbar-in">
-    <a class="brand" href="/"><span class="brand-dot"></span> Pumpkin Hunt</a>
+    <a class="brand" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M15 11c-1-5 1-8 3-9 2-1 4 1 3 3-1 2-3 2-4 3-1 1-1 2-1 3z" fill="#7a5226"/>
+        <ellipse cx="9"  cy="20" rx="7.5" ry="9" fill="#bd4f07"/>
+        <ellipse cx="23" cy="20" rx="7.5" ry="9" fill="#bd4f07"/>
+        <ellipse cx="12.5" cy="19.5" rx="6" ry="9.5" fill="#de650d"/>
+        <ellipse cx="19.5" cy="19.5" rx="6" ry="9.5" fill="#de650d"/>
+        <ellipse cx="16" cy="19" rx="6.2" ry="10" fill="#f77c17"/>
+      </svg>
+      Pumpkin Hunt
+    </a>
     <span class="count" data-count>0 of 10</span>
   </div>
-  <div class="bar"><i data-bar></i></div>
+  <div class="pips" data-pips></div>
 </header>
 <div class="offline">No signal out here &mdash; that&rsquo;s fine, your hunt is saved on this phone.</div>
 
@@ -62,10 +72,11 @@
 
   <!-- Only appears once all ten are in. Nothing is asked of anyone before
        they have had the fun. -->
-  <section class="card stack hide" id="finish" style="margin-top:26px">
-    <div>
-      <span class="eyebrow">All ten found</span>
-      <h2 style="margin-top:8px">That&rsquo;s the lot. Well done.</h2>
+  <section class="card card-warm stack hide" id="finish" style="margin-top:26px">
+    <div class="trophy">
+      <div class="trophy-ring" aria-hidden="true">&#127875;</div>
+      <span class="eyebrow" style="justify-content:center">All ten found</span>
+      <h2 style="margin-top:10px">That&rsquo;s the lot. Well done.</h2>
     </div>
     <p>Want your pumpkin guide emailed over? It lists every variety you found, what each one is best for, and what to do with it once you get it home. Free, and we&rsquo;ll only send it the once.</p>
     <form id="guideForm" class="stack" novalidate>
@@ -112,11 +123,15 @@
     var name = found ? p.name : "Not found yet";
     var sub = found ? p.bestFor : (p.hint || "Keep looking");
 
+    var badge = found
+      ? '<div class="badge badge-found" aria-hidden="true">&#10003;</div>'
+      : '<div class="badge badge-locked" aria-hidden="true">?</div>';
+
     el.innerHTML =
       art +
       '<div class="tile-name">' + name + "</div>" +
       '<div class="tile-sub">' + sub + "</div>" +
-      (found ? '<div class="tile-check" aria-hidden="true">&#10003;</div>' : "");
+      badge;
     if (!found) el.setAttribute("aria-label", "Not found yet. " + (p.hint || ""));
     return el;
   }
@@ -127,7 +142,12 @@
 
     var n = Hunt.foundCount();
     document.getElementById("intro").classList.toggle("hide", n > 0);
-    document.getElementById("finish").classList.toggle("hide", !Hunt.isComplete());
+
+    var done = Hunt.isComplete();
+    document.getElementById("finish").classList.toggle("hide", !done);
+    /* Once per arrival, not once per repaint - nobody wants confetti every
+       time they tap back to the grid. */
+    if (done && !paint.celebrated) { paint.celebrated = true; Hunt.celebrate(); }
 
     var sub = document.getElementById("gridSub");
     if (n === 0) sub.textContent = "Ten to find. Scan the sign beside any pumpkin to start.";

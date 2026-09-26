@@ -16,10 +16,20 @@
 
 <header class="topbar">
   <div class="topbar-in">
-    <a class="brand" href="/"><span class="brand-dot"></span> Pumpkin Hunt</a>
+    <a class="brand" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M15 11c-1-5 1-8 3-9 2-1 4 1 3 3-1 2-3 2-4 3-1 1-1 2-1 3z" fill="#7a5226"/>
+        <ellipse cx="9"  cy="20" rx="7.5" ry="9" fill="#bd4f07"/>
+        <ellipse cx="23" cy="20" rx="7.5" ry="9" fill="#bd4f07"/>
+        <ellipse cx="12.5" cy="19.5" rx="6" ry="9.5" fill="#de650d"/>
+        <ellipse cx="19.5" cy="19.5" rx="6" ry="9.5" fill="#de650d"/>
+        <ellipse cx="16" cy="19" rx="6.2" ry="10" fill="#f77c17"/>
+      </svg>
+      Pumpkin Hunt
+    </a>
     <span class="count" data-count>0 of 10</span>
   </div>
-  <div class="bar"><i data-bar></i></div>
+  <div class="pips" data-pips></div>
 </header>
 <div class="offline">No signal out here &mdash; that&rsquo;s fine, your hunt is saved on this phone.</div>
 
@@ -71,10 +81,10 @@
 
     main.innerHTML =
       '<section class="stack-lg">' +
-        '<div class="stack">' +
+        '<div class="stack reveal-line">' +
           (isNew
             ? '<div class="found-flash">&#10003; Found &mdash; number ' + n + " of " + Hunt.total() + "</div>"
-            : '<div class="found-flash" style="color:var(--muted)">You already had this one</div>') +
+            : '<div class="found-flash quiet">You already had this one</div>') +
           '<div class="hero-art"><img src="' + Hunt.artFor(p) + '" alt="' + esc(p.name) + '"></div>' +
           "<div>" +
             '<span class="eyebrow">' + esc(p.tagline) + "</span>" +
@@ -103,7 +113,10 @@
   var isNew = Hunt.markFound(pumpkin.slug);
   render(pumpkin, isNew);
 
-  if (isNew && Hunt.isComplete()) Hunt.track("complete", {});
+  if (isNew && Hunt.isComplete()) {
+    Hunt.track("complete", {});
+    Hunt.celebrate();
+  }
 })();
 </script>
 </body>
