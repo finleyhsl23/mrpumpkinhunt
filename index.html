@@ -521,6 +521,11 @@
       .then(function (res) {
         if (!res || !res.ok) throw new Error((res && res.reason) || "send failed");
         Hunt.setEmail(email);
+        /* Save the hunt against the address now it is known. Without this, an
+           address given only at the END was never recorded, so coming back
+           with it found nothing - which is precisely the case somebody is
+           most likely to try, having just had the guide emailed to them. */
+        Hunt.saveRemote();
         msg.className = "msg msg-ok";
         msg.textContent = "Sent. Have a look in your inbox — check spam if it’s shy.";
         document.getElementById("doneAsk").classList.add("hide");
