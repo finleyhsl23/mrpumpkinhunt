@@ -8,7 +8,7 @@
  * Bump CACHE when anything in SHELL changes, or phones keep serving the old
  * copy until their site data is cleared.
  */
-var CACHE = "mrpumpkin-v6";
+var CACHE = "mrpumpkin-v7";
 
 /* Canonical, extensionless paths only.
  *
@@ -100,25 +100,25 @@ self.addEventListener("fetch", function (event) {
      signs - including the nine not scanned yet. */
   var lookup = /^\/p\//.test(url.pathname) ? "/found" : req;
 
+  /* Pages are network-first, assets are cache-first.
+   *
+   * Cache-first for pages meant a returning phone always rendered the
+   * PREVIOUS build and only picked up changes on the visit after - so a fix
+   * pushed in the morning would not reach anyone until their second load.
+   * That is wrong for a site being changed daily a week before it opens.
+   *
+   * Going to the network first costs a moment when online and nothing at all
+   * when offline, because the timeout below falls straight back to the cache.
+   * Assets stay cache-first: they are the heavy part, and bumping CACHE is
+   * what releases new ones. */
+  if (isNavigation) {
+    event.respondWith(networkFirst(req, lookup));
+    return;
+  }
+
   event.respondWith(
     caches.match(lookup, { ignoreSearch: true }).then(function (hit) {
-      /* Never hand a redirected response to a navigation. Older installs may
-         still hold one from before this was understood. */
-      if (hit && isNavigation && hit.redirected) hit = null;
-
-      if (hit) {
-        /* Refresh quietly so a content fix lands on the next visit. */
-        fetch(req)
-          .then(cleanResponse)
-          .then(function (res) {
-            if (res && res.ok) {
-              return caches.open(CACHE).then(function (c) { return c.put(lookup, res); });
-            }
-          })
-          .catch(function () {});
-        return hit;
-      }
-
+      if (hit) return hit;
       return fetch(req)
         .then(cleanResponse)
         .then(function (res) {
@@ -128,11 +128,38 @@ self.addEventListener("fetch", function (event) {
           }
           return res;
         })
-        .catch(function () {
-          /* Offline and never cached: hand back something rather than a
-             browser error page. */
-          return caches.match(isNavigation ? "/" : req);
-        });
+        .catch(function () { return caches.match(req); });
     })
   );
 });
+
+function networkFirst(req, lookup) {
+  /* A field with one bar is worse than no bars: the request neither fails
+     nor arrives. Race it, and take the cache if the network dawdles. */
+  var timeout = new Promise(function (resolve) {
+    setTimeout(function () { resolve(null); }, 2500);
+  });
+
+  var live = fetch(req)
+    .then(cleanResponse)
+    .then(function (res) {
+      if (res && res.ok) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(lookup, copy); });
+      }
+      return res;
+    })
+    .catch(function () { return null; });
+
+  return Promise.race([live, timeout]).then(function (res) {
+    if (res && res.ok) return res;
+    /* Network was slow, absent or unhappy - serve what we precached at the
+       gate. Never a redirected response: a navigation will not accept one. */
+    return caches.match(lookup, { ignoreSearch: true }).then(function (hit) {
+      if (hit && !hit.redirected) return hit;
+      return live.then(function (late) {
+        return (late && late.ok) ? late : caches.match("/");
+      });
+    });
+  });
+}

@@ -163,7 +163,7 @@ Cloudflare Pages, no build command, output directory is the repository root.
 | `SUPABASE_URL`              | `https://<ref>.supabase.co`                          |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key. **Server-side only.**              |
 | `RESEND_API_KEY`            | Resend API key                                       |
-| `GUIDE_FROM`                | e.g. `Mr Pumpkin Hunt <hunt@mail.example.co.uk>`     |
+| `GUIDE_FROM`                | `Mr Pumpkin Hunt <hunt@smartcoretechnology.co.uk>`  |
 | `IP_SALT`                   | Any long random string, for hashing IPs              |
 
 The browser never talks to Supabase. Both keys stay in the Pages functions,
@@ -184,9 +184,17 @@ Two views worth reading during the season:
 
 ### Email
 
-Send from a **subdomain** (`mail.…`), not the root domain, so a problem here
-can never affect deliverability of anything else. Get SPF, DKIM and DMARC in
-before the 4th — not on the morning of.
+**The From domain must be verified for sending in Resend, or nothing goes
+out.** This cost an evening: `GUIDE_FROM` pointed at a `mail.` subdomain that
+had never been created, so Resend rejected every send before it was even
+logged — the failure was invisible from the dashboard because no email was
+ever recorded.
+
+The verified sending domain is `smartcoretechnology.co.uk`, which is what the
+code now defaults to. A dedicated `mail.` subdomain is still the better shape
+long term — it isolates a client's sending reputation from SmartCore's own
+transactional mail — but it has to be created and verified in Resend first,
+with SPF, DKIM and DMARC in DNS.
 
 The From *name* is the event, not SmartCore. Nobody who spent an afternoon at
 a pumpkin patch knows what SmartCore is; if that is the sender they will bin

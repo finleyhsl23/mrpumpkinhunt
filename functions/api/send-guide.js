@@ -1,28 +1,38 @@
 import { json, sb, hashIp, readBody } from "./_lib.js";
 
-/* Emails the visitor their pumpkin guide once they have finished the hunt.
+/* Emails the visitor their pumpkin guide.
  *
  * This is a public "type an address, we send mail" endpoint, which is an
  * abuse relay if left open - someone will point it at a third party, or
- * simply burn the month's Resend quota for entertainment. Hence the per-IP
- * cap and the strict allowlist of what can appear in the message: the body is
- * built from our own content file, and nothing the caller sends is rendered
- * except a first name, escaped.
+ * simply burn the month's quota for entertainment. Hence the per-IP cap and
+ * the strict allowlist of what can appear in the message: the body is built
+ * from our own content, and nothing the caller sends is rendered except a
+ * first name, escaped.
  */
 
 const MAX_PER_IP_PER_HOUR = 6;
+const SITE = "https://mrpumpkinhunt.pages.dev";
+
+/* Brand palette, lifted from the hunt. Email gets a warm cream body rather
+ * than the site's near-black: several clients invert dark backgrounds badly,
+ * and a cream email prints legibly if anyone ever does. */
+const ORANGE = "#f97316";
+const BROWN = "#2a1a0f";
+const CREAM = "#fdf7ef";
+const INK = "#3d2411";
+const MUTED = "#7b6857";
 
 const VARIETIES = {
-  "crown-prince":    { name: "Crown Prince",    best: "Roasting & soup",        note: "Keeps for months in a cool shed - one bought today will still be good at Christmas." },
-  "casperita":       { name: "Casperita",       best: "Decorating",             note: "White pumpkins are not painted; the skin simply never makes the orange pigment." },
-  "warty-goblin":    { name: "Warty Goblin",    best: "Carving & display",      note: "The warts are hard as bark and no two are ever the same." },
-  "grizzly-bear":    { name: "Grizzly Bear",    best: "Carving",                note: "That thick stalk is the handle, and a good one means it was picked ripe." },
-  "blue-banana":     { name: "Blue Banana",     best: "Roasting & soup",        note: "Cut it into rings rather than wedges - it roasts far more evenly." },
-  "galaxy-of-stars": { name: "Galaxy of Stars", best: "Display",                note: "The speckles spread as it grows, so the biggest are the most freckled." },
-  "jill-be-little":  { name: "Jill Be Little",  best: "Decorating",             note: "Hollow one out, crack an egg in and bake it - properly edible." },
-  "tiny-turk":       { name: "Tiny Turk",       best: "Display",                note: "The knot on top is the blossom end, growing upwards instead of tucking in." },
-  "porcelain-doll":  { name: "Porcelain Doll",  best: "Roasting, soup & pies",  note: "Pink pumpkins are grown worldwide to raise money for breast cancer charities." },
-  "magic-lantern":   { name: "Magic Lantern",   best: "Carving",                note: "Cut the lid slanted inwards or it drops straight through." },
+  "crown-prince":    { name: "Crown Prince",    best: "Roasting & soup",       note: "Keeps for months in a cool shed — and the flavour improves, so it is better at Christmas than today." },
+  "casperita":       { name: "Casperita",       best: "Decorating",            note: "White pumpkins are not painted; the skin simply never makes the orange pigment." },
+  "warty-goblin":    { name: "Warty Goblin",    best: "Carving & display",     note: "The warts are hard as bark and no two are ever the same." },
+  "grizzly-bear":    { name: "Grizzly Bear",    best: "Display",               note: "Tan rather than orange, and the warts are bred hard so they survive a day of handling." },
+  "blue-banana":     { name: "Blue Banana",     best: "Roasting & soup",       note: "Cut it into rings rather than wedges — it roasts far more evenly." },
+  "galaxy-of-stars": { name: "Galaxy of Stars", best: "Display",               note: "A gourd, not a pumpkin. Look at one end on and you will see the five points." },
+  "jill-be-little":  { name: "Jill Be Little",  best: "Decorating",            note: "Hollow one out, crack an egg in and bake it — properly edible." },
+  "tiny-turk":       { name: "Tiny Turk",       best: "Display",               note: "The knot on top is the blossom end, growing upwards instead of tucking in." },
+  "porcelain-doll":  { name: "Porcelain Doll",  best: "Roasting, soup & pies", note: "Pink pumpkins are grown worldwide to raise money for breast cancer charities." },
+  "magic-lantern":   { name: "Magic Lantern",   best: "Carving",               note: "Cut the lid slanted inwards or it drops straight through." },
 };
 
 const esc = (s) =>
@@ -32,37 +42,108 @@ function buildEmail(name, foundSlugs) {
   const found = foundSlugs.filter((s) => VARIETIES[s]);
   const missed = Object.keys(VARIETIES).filter((s) => !found.includes(s));
   const who = name ? esc(name) : "you";
+  const all = found.length === Object.keys(VARIETIES).length;
 
+  /* Tables and inline styles throughout: Outlook still has no flexbox, and
+     a <style> block is stripped by several clients including Gmail. */
   const row = (slug) => {
     const v = VARIETIES[slug];
-    return `<tr><td style="padding:14px 0;border-bottom:1px solid #eee2d4">
-      <div style="font:600 17px/1.3 Georgia,serif;color:#3d2411">${esc(v.name)}</div>
-      <div style="font:600 12px/1.6 Arial,sans-serif;color:#c2610d;text-transform:uppercase;letter-spacing:.08em">${esc(v.best)}</div>
-      <div style="font:400 14px/1.6 Arial,sans-serif;color:#5d4c3c;margin-top:5px">${esc(v.note)}</div>
-    </td></tr>`;
+    return `<tr><td style="padding:0 0 10px">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+             style="background:${CREAM};border-radius:14px;border:1px solid #efe2d1">
+        <tr>
+          <td width="84" valign="middle" style="padding:12px 0 12px 12px">
+            <img src="${SITE}/assets/pumpkins/png/${slug}.png" width="72" height="72" alt="${esc(v.name)}"
+                 style="display:block;width:72px;height:72px;border:0;border-radius:12px">
+          </td>
+          <td valign="middle" style="padding:12px 16px 12px 14px">
+            <div style="font:700 17px/1.25 Georgia,'Times New Roman',serif;color:${INK}">${esc(v.name)}</div>
+            <div style="font:700 11px/1.6 Arial,Helvetica,sans-serif;color:${ORANGE};letter-spacing:.09em;text-transform:uppercase">${esc(v.best)}</div>
+            <div style="font:400 13px/1.55 Arial,Helvetica,sans-serif;color:${MUTED};padding-top:4px">${esc(v.note)}</div>
+          </td>
+        </tr>
+      </table></td></tr>`;
   };
 
-  const html = `<!DOCTYPE html><html><body style="margin:0;background:#faf5ee;padding:24px 12px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;padding:26px">
-<tr><td>
-  <div style="font:600 12px/1 Arial,sans-serif;color:#c2610d;letter-spacing:.14em;text-transform:uppercase">Mr Pumpkin</div>
-  <h1 style="font:700 26px/1.2 Georgia,serif;color:#3d2411;margin:10px 0 0">All ten found</h1>
-  <p style="font:400 15px/1.6 Arial,sans-serif;color:#5d4c3c">Well done ${who} — here is every variety from the hunt, and what each one is actually good for once you get it home.</p>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${found.map(row).join("")}</table>
-  ${missed.length ? `<p style="font:400 14px/1.6 Arial,sans-serif;color:#7b6857;margin-top:20px">You didn't catch ${missed.length} of them this time — ${esc(missed.map((s) => VARIETIES[s].name).join(", "))}. Something for the next visit.</p>` : ""}
-  <p style="font:400 13px/1.7 Arial,sans-serif;color:#8a7867;margin-top:26px;padding-top:16px;border-top:1px solid #eee2d4">
-    Sent once because you asked for it at the end of the hunt. We won't email you again.<br>
-    Pumpkin hunt built by <a href="https://smartcoretechnology.co.uk" style="color:#c2610d">SmartCore Technology</a>.
-  </p>
-</td></tr></table></body></html>`;
+  const html = `<!DOCTYPE html>
+<html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your Mr Pumpkin guide</title></head>
+<body style="margin:0;padding:0;background:#efe4d6;">
+<!-- Shown in the inbox preview line, before anything is opened. -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">Every variety you found at Mr Pumpkin, and what each one is best for.</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#efe4d6;padding:20px 12px">
+<tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:20px;overflow:hidden">
+
+  <tr><td style="background:${BROWN};padding:22px 26px">
+    <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+      <td valign="middle" style="padding-right:10px">
+        <img src="${SITE}/assets/favicon.svg" width="26" height="26" alt=""
+             style="display:block;width:26px;height:26px;border:0">
+      </td>
+      <td valign="middle">
+        <div style="font:700 17px/1.2 Arial,Helvetica,sans-serif;color:#fff">Mr Pumpkin</div>
+        <div style="font:400 12px/1.4 Arial,Helvetica,sans-serif;color:#c9ac8e">Pick Your Perfect Pumpkin Near Derby</div>
+      </td>
+    </tr></table>
+  </td></tr>
+
+  <tr><td style="padding:28px 26px 4px">
+    <div style="font:700 11px/1 Arial,Helvetica,sans-serif;color:${ORANGE};letter-spacing:.16em;text-transform:uppercase">
+      ${all ? "All ten found" : `${found.length} of 10 found`}
+    </div>
+    <h1 style="font:700 27px/1.2 Georgia,'Times New Roman',serif;color:${INK};margin:12px 0 0">
+      ${all ? `Well done ${who}.` : `Nicely done ${who}.`}
+    </h1>
+    <p style="font:400 15px/1.6 Arial,Helvetica,sans-serif;color:${MUTED};margin:10px 0 0">
+      Here is every variety you found on the hunt, and what each one is actually good for once you get it home.
+    </p>
+  </td></tr>
+
+  <tr><td style="padding:22px 26px 0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${found.map(row).join("")}</table>
+  </td></tr>
+
+  ${missed.length ? `<tr><td style="padding:10px 26px 0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:${CREAM};border-radius:14px;border:1px dashed #e3d2bc">
+      <tr><td style="padding:16px 18px">
+        <div style="font:700 13px/1.3 Arial,Helvetica,sans-serif;color:${INK}">Still out there</div>
+        <div style="font:400 13px/1.6 Arial,Helvetica,sans-serif;color:${MUTED};padding-top:4px">
+          ${esc(missed.map((s) => VARIETIES[s].name).join(", "))} — something for the next visit.
+        </div>
+      </td></tr></table>
+  </td></tr>` : ""}
+
+  <tr><td align="center" style="padding:24px 26px 6px">
+    <a href="${SITE}" style="display:inline-block;background:${ORANGE};color:#2b1503;text-decoration:none;
+       font:700 15px/1 Arial,Helvetica,sans-serif;padding:15px 30px;border-radius:99px">Back to the hunt</a>
+  </td></tr>
+
+  <tr><td style="padding:22px 26px 26px">
+    <div style="border-top:1px solid #efe2d1;padding-top:16px;
+         font:400 12px/1.7 Arial,Helvetica,sans-serif;color:#9d8b79">
+      Sent once because you asked for it at the end of the hunt. We will not email you again.<br>
+      Hunt built by <a href="https://smartcoretechnology.co.uk" style="color:${ORANGE};text-decoration:none">SmartCore Technology</a>.
+    </div>
+  </td></tr>
+
+</table></td></tr></table>
+</body></html>`;
 
   const text =
-    `Well done ${name || "you"} - here is every variety from the hunt.\n\n` +
+    `${all ? "Well done" : "Nicely done"} ${name || "you"} - ${found.length} of 10 found at Mr Pumpkin.\n\n` +
     found.map((s) => `${VARIETIES[s].name} - ${VARIETIES[s].best}\n  ${VARIETIES[s].note}`).join("\n\n") +
-    (missed.length ? `\n\nStill to find next time: ${missed.map((s) => VARIETIES[s].name).join(", ")}` : "") +
-    `\n\nSent once because you asked for it at the end of the hunt.\nBuilt by SmartCore Technology - smartcoretechnology.co.uk\n`;
+    (missed.length ? `\n\nStill out there: ${missed.map((s) => VARIETIES[s].name).join(", ")}` : "") +
+    `\n\nBack to the hunt: ${SITE}\n\nSent once because you asked for it at the end of the hunt.\nBuilt by SmartCore Technology - smartcoretechnology.co.uk\n`;
 
-  return { html, text };
+  const subject = all
+    ? `${name ? name + ", you" : "You"} found all ten — your Mr Pumpkin guide`
+    : `Your Mr Pumpkin guide — ${found.length} of 10 found`;
+
+  return { html, text, subject };
 }
 
 export async function onRequestPost({ request, env }) {
@@ -80,6 +161,11 @@ export async function onRequestPost({ request, env }) {
   const found = Array.isArray(body.found) ? body.found.filter((s) => VARIETIES[s]).slice(0, 10) : [];
   if (!found.length) return json({ error: "nothing found yet" }, 400);
 
+  if (!env.RESEND_API_KEY) {
+    console.log("send-guide: RESEND_API_KEY is not set");
+    return json({ error: "email is not configured" }, 503);
+  }
+
   const ip = await hashIp(request, env.IP_SALT);
 
   /* Cheap durable rate limit. At this volume a round trip costs nothing, and
@@ -89,39 +175,32 @@ export async function onRequestPost({ request, env }) {
     const res = await sb(env, `guide_requests?ip_hash=eq.${ip}&created_at=gte.${since}&select=id`, {
       headers: { Prefer: "count=exact", Range: "0-0" },
     });
-    const range = res.headers.get("content-range") || "";
-    const total = parseInt(range.split("/")[1] || "0", 10);
-    if (total >= MAX_PER_IP_PER_HOUR) {
-      return json({ error: "too many requests, try again later" }, 429);
-    }
+    const total = parseInt((res.headers.get("content-range") || "").split("/")[1] || "0", 10);
+    if (total >= MAX_PER_IP_PER_HOUR) return json({ error: "too many requests, try again later" }, 429);
   } catch {
     /* If the check itself fails, let the send through rather than block a
        family at the gate. The cap is anti-abuse, not billing control. */
   }
 
-  const { html, text } = buildEmail(name, found);
+  const { html, text, subject } = buildEmail(name, found);
+
+  /* The From name is the event, not SmartCore: nobody who spent an afternoon
+     at a pumpkin patch knows what SmartCore is, and an unrecognised sender
+     gets binned. Attribution lives in the footer instead. The domain must be
+     one that is verified for sending in Resend. */
+  const from = env.GUIDE_FROM || "Mr Pumpkin Hunt <hunt@smartcoretechnology.co.uk>";
 
   const sent = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      /* Friendly From name, because nobody who spent an afternoon at a
-         pumpkin patch knows what SmartCore is. Attribution goes in the
-         footer, not the sender. */
-      from: env.GUIDE_FROM || "Mr Pumpkin Hunt <hunt@mail.smartcoretechnology.co.uk>",
-      to: [email],
-      subject: "Your Mr Pumpkin guide",
-      html,
-      text,
-    }),
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from, to: [email], subject, html, text }),
   });
 
   if (!sent.ok) {
+    /* Logged in full because the usual cause is a From domain that is not
+       verified, and the message says exactly that. */
     const detail = await sent.text().catch(() => "");
-    console.log("resend failed", sent.status, detail.slice(0, 300));
+    console.log("send-guide: resend rejected", sent.status, "from:", from, detail.slice(0, 400));
     return json({ error: "could not send" }, 502);
   }
 
@@ -129,13 +208,7 @@ export async function onRequestPost({ request, env }) {
     await sb(env, "guide_requests", {
       method: "POST",
       headers: { Prefer: "return=minimal" },
-      body: JSON.stringify({
-        email,
-        name: name || null,
-        device: String(body.device || "").slice(0, 64),
-        found_slugs: found,
-        ip_hash: ip,
-      }),
+      body: JSON.stringify({ email, name: name || null, device: String(body.device || "").slice(0, 64), found_slugs: found, ip_hash: ip }),
     });
   } catch {
     /* The email is away, which is what the visitor cares about. */
