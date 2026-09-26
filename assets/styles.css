@@ -245,19 +245,17 @@ p  { margin: 0; line-height: 1.62; color: var(--muted); }
 .tile-name { font-size: 14.5px; font-weight: 600; text-align: center; line-height: 1.22; }
 .tile-sub  { font-size: 11px; text-align: center; color: var(--dim); margin-top: 4px; line-height: 1.4; }
 
-/* Not-found state. This has to read as a deliberate empty slot - a silhouette
-   plus a question mark - or a first-time visitor, seeing ten of them at once,
-   assumes the images are broken. */
+/* Not-found state. The pumpkin shows in full, because with fifty varieties
+   growing out there, knowing what you are looking for is the game - a
+   silhouette helps nobody spot a Porcelain Doll. Found and not-found are told
+   apart by the dashed edge and the tick, not by hiding the fruit. */
 .tile.locked {
   border-style: dashed;
-  border-color: rgba(255,255,255,.11);
-  background: rgba(255,255,255,.018);
+  border-color: rgba(255, 226, 196, .14);
+  background: rgba(255, 236, 214, .02);
 }
-.tile.locked .tile-art img {
-  filter: brightness(0) invert(1) sepia(1) saturate(.35) hue-rotate(345deg);
-  opacity: .34;
-}
-.tile.locked .tile-name { color: #8d7f99; font-weight: 500; }
+.tile.locked .tile-art img { opacity: .62 }
+.tile.locked .tile-name { color: var(--muted) }
 
 .tile.found { border-color: var(--line-warm); }
 .tile.found::before {
@@ -280,7 +278,6 @@ p  { margin: 0; line-height: 1.62; color: var(--muted); }
   font-size: 13px; font-weight: 700;
 }
 .badge-found { background: linear-gradient(180deg, var(--orange-2), var(--orange)); color: #2b1503; }
-.badge-locked { background: rgba(255,255,255,.07); color: #8d7f99; border: 1px dashed rgba(255,255,255,.18); }
 
 /* ---------- tags ---------- */
 
@@ -482,3 +479,74 @@ body.is-offline .offline { display: block }
 .finish-cta { margin-top: 22px }
 .finish-cta .btn[disabled] { opacity: .4 }
 .finish-hint { text-align: center; font-size: 13px; color: var(--dim); margin-top: 10px }
+
+/* ---------- the scanner ---------- */
+
+.scan-stage {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--line);
+}
+.scan-stage video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* A cut-out frame so people know where to aim. Corner brackets rather than a
+   full box - a solid border competes with the code itself. */
+.scan-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+.scan-frame i {
+  width: min(66%, 240px);
+  aspect-ratio: 1;
+  border-radius: 20px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .45);
+  outline: 2px solid rgba(255, 255, 255, .5);
+  outline-offset: -2px;
+}
+.scan-frame i::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: min(66%, 240px);
+  height: 2px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(90deg, transparent, var(--orange-2), transparent);
+  animation: sweep 2.4s ease-in-out infinite;
+}
+@keyframes sweep {
+  0%, 100% { transform: translate(-50%, calc(-50% - min(33vw, 116px))); opacity: .3 }
+  50%      { transform: translate(-50%, calc(-50% + min(33vw, 116px))); opacity: 1 }
+}
+
+.scan-tip {
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 14px;
+}
+
+.torch {
+  position: absolute;
+  right: 12px; bottom: 12px;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.28);
+  background: rgba(0,0,0,.5);
+  color: #fff;
+  font-size: 20px;
+  display: grid; place-items: center;
+  cursor: pointer;
+}
+.torch.on { background: var(--orange); color: #2b1503; border-color: transparent }
+
+@media (prefers-reduced-motion: reduce) { .scan-frame i::after { animation: none } }

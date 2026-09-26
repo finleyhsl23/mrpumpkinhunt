@@ -39,7 +39,8 @@ assets/pumpkins.js          THE CONTENT FILE — names, descriptions, codes
 assets/app.js               progress store, offline queue
 assets/styles.css           all colour lives in the :root block at the top
 assets/pumpkins/*.svg       placeholder artwork (see below)
-assets/vendor/qrcode.js     vendored QR encoder, deliberately not a CDN link
+assets/vendor/qrcode.js     vendored QR encoder for the printed signs
+assets/vendor/jsqr.js       vendored QR reader for the in-app scanner
 functions/api/track.js      anonymous stats
 functions/api/send-guide.js the completion email
 supabase/001_*.sql          the mrpumpkin schema
@@ -47,6 +48,27 @@ sw.js                       the offline cache
 ```
 
 ---
+
+## Scanning
+
+There is a **Scan a sign** button in the hunt, rather than leaving people to
+work out that their phone's camera reads QR codes. It opens the camera in the
+page, decodes with jsQR, and goes straight to that pumpkin.
+
+- jsQR is **loaded on first use**, not on page load - it is the heaviest file
+  here and most visits never open the scanner. It is precached all the same,
+  so scanning works out in the field with no signal.
+- Frames are downscaled to 420px before decoding. Full-resolution frames pin
+  the CPU and flatten the battery for no gain in accuracy.
+- A **torch button** appears where the browser supports it. Two October dates
+  run to 6pm and the last week closes on dusk.
+- Every failure - permission refused, no camera, an old browser - falls
+  through to the code box on the same screen. It is never a dead end.
+- The camera is released when the screen is left, hidden, or the page is
+  closed, so it cannot sit running in a pocket.
+
+Tested against a synthetic camera feed containing a real printed sign: the
+scanner decodes it and lands on the right pumpkin.
 
 ## Codes, and why they look like nonsense
 

@@ -8,7 +8,7 @@
  * Bump CACHE when anything in SHELL changes, or phones keep serving the old
  * copy until their site data is cleared.
  */
-var CACHE = "mrpumpkin-v4";
+var CACHE = "mrpumpkin-v5";
 
 /* Canonical, extensionless paths only.
  *
@@ -25,6 +25,7 @@ var SHELL = [
   "/assets/styles.css",
   "/assets/app.js",
   "/assets/pumpkins.js",
+  "/assets/vendor/jsqr.js",
   "/assets/favicon.svg",
   "/assets/field.svg",
   "/assets/pumpkins/crown-prince.svg",

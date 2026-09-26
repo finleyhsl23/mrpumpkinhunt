@@ -87,16 +87,37 @@
     <div class="grid" id="grid"></div>
 
     <div class="finish-cta">
-      <button class="btn btn-primary" id="finishBtn" disabled>Finish the hunt</button>
+      <button class="btn btn-primary" id="scanBtn">&#128247;&nbsp; Scan a sign</button>
+      <button class="btn btn-ghost" id="finishBtn" disabled style="margin-top:11px">Finish the hunt</button>
       <p class="finish-hint" id="finishHint">Find all ten to finish.</p>
     </div>
 
-    <!-- Signs get muddy, snapped and knocked over by livestock. Staff read the
-         code off the sign and the visitor types it here. -->
-    <section class="card stack" style="margin-top:26px">
+    <footer class="foot">
+      <p>Mr Pumpkin &middot; Pick Your Perfect Pumpkin Near Derby</p>
+      <p>Hunt built by <a href="https://smartcoretechnology.co.uk" rel="noopener">SmartCore Technology</a></p>
+    </footer>
+  </section>
+
+  <!-- ==================== 3b. SCAN ==================== -->
+  <section class="screen hide" id="screenScan" style="padding-top:20px">
+    <div class="stack" style="margin-bottom:14px">
+      <h2>Scan a pumpkin sign</h2>
+      <p id="scanSub">Point your camera at the code on the sign.</p>
+    </div>
+
+    <div class="scan-stage" id="scanStage">
+      <video id="scanVideo" playsinline muted autoplay></video>
+      <div class="scan-frame"><i></i></div>
+      <button class="torch hide" id="torchBtn" aria-label="Torch">&#128161;</button>
+    </div>
+    <p class="scan-tip" id="scanTip">Hold steady &mdash; it only takes a moment.</p>
+
+    <!-- Signs get muddy, snapped and knocked over by livestock, and a camera
+         is no use in the dark. Typing the code is always available here. -->
+    <section class="card stack" style="margin-top:22px">
       <div>
-        <h2>Sign won&rsquo;t scan?</h2>
-        <p class="hint-text" style="margin-top:6px">Type the code printed underneath it.</p>
+        <h2 style="font-size:19px">Won&rsquo;t scan?</h2>
+        <p class="hint-text" style="margin-top:6px">Type the code printed underneath the QR.</p>
       </div>
       <form id="codeForm" novalidate>
         <input class="code-input" type="text" id="codeInput" inputmode="latin" autocomplete="off"
@@ -106,10 +127,7 @@
       <div id="codeMsg"></div>
     </section>
 
-    <footer class="foot">
-      <p>Mr Pumpkin &middot; Pick Your Perfect Pumpkin Near Derby</p>
-      <p>Hunt built by <a href="https://smartcoretechnology.co.uk" rel="noopener">SmartCore Technology</a></p>
-    </footer>
+    <button class="btn btn-ghost" id="scanBackBtn" style="margin-top:20px">Back to my collection</button>
   </section>
 
   <!-- ==================== 4. FINISHED ==================== -->
@@ -170,6 +188,7 @@
     start: document.getElementById("screenStart"),
     email: document.getElementById("screenEmail"),
     hunt:  document.getElementById("screenHunt"),
+    scan:  document.getElementById("screenScan"),
     done:  document.getElementById("screenDone"),
   };
 
@@ -178,7 +197,8 @@
       screens[k].classList.toggle("hide", k !== name);
     });
     /* The counter and pips are meaningless before the hunt begins. */
-    var hunting = name === "hunt" || name === "done";
+    var hunting = name !== "start" && name !== "email";
+    if (name !== "scan") Scanner.stop();
     document.querySelector("[data-count]").classList.toggle("hide", !hunting);
     document.querySelector("[data-pips]").classList.toggle("hide", !hunting);
     window.scrollTo(0, 0);
@@ -197,16 +217,17 @@
     el.className = "tile " + (found ? "found" : "locked");
     if (found) el.href = "/p/" + p.code;
 
+    /* The pumpkin and its name show whether or not it has been found. With
+       fifty varieties growing in that field, knowing what you are looking
+       for IS the game - a silhouette helps nobody spot a Porcelain Doll. */
     var h = Math.round(40 + (p.scale / maxScale) * 60);
     el.innerHTML =
       '<div class="tile-art"><img src="' + Hunt.artFor(p) + '" alt="" style="height:' + h + 'px" loading="lazy"></div>' +
-      '<div class="tile-name">' + (found ? p.name : "Not found yet") + "</div>" +
-      '<div class="tile-sub">' + (found ? p.bestFor : (p.hint || "Keep looking")) + "</div>" +
-      (found
-        ? '<div class="badge badge-found" aria-hidden="true">&#10003;</div>'
-        : '<div class="badge badge-locked" aria-hidden="true">?</div>');
+      '<div class="tile-name">' + p.name + "</div>" +
+      '<div class="tile-sub">' + (found ? p.bestFor : (p.hint || "Still to find")) + "</div>" +
+      (found ? '<div class="badge badge-found" aria-hidden="true">&#10003;</div>' : "");
 
-    if (!found) el.setAttribute("aria-label", "Not found yet. " + (p.hint || ""));
+    el.setAttribute("aria-label", p.name + (found ? ", found" : ", not found yet. " + (p.hint || "")));
     return el;
   }
 
@@ -338,6 +359,159 @@
     paintGrid();
     show("hunt");
   });
+
+  /* ---------- the scanner ----------------------------------------------
+   *
+   * An in-app scanner rather than leaning on the phone's own camera app:
+   * plenty of people do not know their camera reads QR codes, and a button
+   * that says "Scan a sign" removes the guesswork.
+   *
+   * jsQR is loaded on first use, not on page load - it is the heaviest file
+   * here and most visits never open it. It is precached by the service
+   * worker all the same, so it is there in a field with no signal.
+   */
+  var Scanner = (function () {
+    var stream = null, raf = null, canvas = null, ctx = null, lib = null, busy = false;
+
+    function loadLib() {
+      if (lib) return Promise.resolve(lib);
+      if (window.jsQR) { lib = window.jsQR; return Promise.resolve(lib); }
+      return new Promise(function (resolve, reject) {
+        var tag = document.createElement("script");
+        tag.src = "/assets/vendor/jsqr.js";
+        tag.onload = function () { lib = window.jsQR; lib ? resolve(lib) : reject(new Error("no jsQR")); };
+        tag.onerror = function () { reject(new Error("load failed")); };
+        document.head.appendChild(tag);
+      });
+    }
+
+    /* A sign encodes a full URL. Accept a bare code too, in case someone
+       generates their own QR later. */
+    function codeFrom(text) {
+      var value = String(text || "").trim();
+      var m = value.match(/\/p\/([A-Za-z0-9]+)/);
+      if (m) return m[1].toLowerCase();
+      if (/^[a-z0-9]{4,8}$/i.test(value)) return value.toLowerCase();
+      return "";
+    }
+
+    function fail(message) {
+      document.getElementById("scanStage").classList.add("hide");
+      document.getElementById("scanTip").classList.add("hide");
+      document.getElementById("scanSub").textContent = message;
+      /* Never a dead end: the code box below is always there. */
+      document.getElementById("codeInput").focus({ preventScroll: true });
+    }
+
+    function tick() {
+      raf = requestAnimationFrame(tick);
+      var video = document.getElementById("scanVideo");
+      if (busy || !video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+      /* Downscale before decoding. Full-resolution frames pin the CPU and
+         flatten the battery for no gain in accuracy. */
+      var w = 420;
+      var h = Math.round((video.videoHeight / video.videoWidth) * w) || 560;
+      if (canvas.width !== w) { canvas.width = w; canvas.height = h; }
+      ctx.drawImage(video, 0, 0, w, h);
+
+      var frame;
+      try { frame = ctx.getImageData(0, 0, w, h); } catch (e) { return; }
+
+      var hit = lib(frame.data, w, h, { inversionAttempts: "dontInvert" });
+      if (!hit || !hit.data) return;
+
+      var code = codeFrom(hit.data);
+      var pumpkin = Hunt.byCode(code);
+      if (!pumpkin) return;   // somebody else's QR - keep looking
+
+      busy = true;
+      if (navigator.vibrate) navigator.vibrate(60);
+      stop();
+      window.location.href = "/p/" + pumpkin.code;
+    }
+
+    function start() {
+      busy = false;
+      document.getElementById("scanStage").classList.remove("hide");
+      document.getElementById("scanTip").classList.remove("hide");
+      document.getElementById("scanSub").textContent = "Point your camera at the code on the sign.";
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        fail("This browser can\u2019t open the camera. Type the code instead \u2014 it\u2019s under the QR.");
+        return;
+      }
+
+      loadLib()
+        .then(function () {
+          return navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false,
+          });
+        })
+        .then(function (media) {
+          stream = media;
+          var video = document.getElementById("scanVideo");
+          video.srcObject = media;
+          video.setAttribute("playsinline", "");   // iOS refuses to inline without it
+          var playing = video.play();
+          if (playing && playing.catch) playing.catch(function () {});
+
+          if (!canvas) { canvas = document.createElement("canvas"); ctx = canvas.getContext("2d", { willReadFrequently: true }); }
+
+          /* A torch is worth having: two October dates run to 6pm and the
+             last week closes on dusk. Not every browser offers it. */
+          var track = media.getVideoTracks()[0];
+          var caps = track && track.getCapabilities ? track.getCapabilities() : {};
+          var torchBtn = document.getElementById("torchBtn");
+          if (caps && caps.torch) {
+            torchBtn.classList.remove("hide");
+            torchBtn.onclick = function () {
+              var on = !torchBtn.classList.contains("on");
+              track.applyConstraints({ advanced: [{ torch: on }] })
+                .then(function () { torchBtn.classList.toggle("on", on); })
+                .catch(function () {});
+            };
+          } else {
+            torchBtn.classList.add("hide");
+          }
+
+          raf = requestAnimationFrame(tick);
+        })
+        .catch(function (err) {
+          var denied = err && (err.name === "NotAllowedError" || err.name === "SecurityError");
+          fail(denied
+            ? "No camera access \u2014 no problem. Type the code from under the QR instead."
+            : "Couldn\u2019t start the camera. Type the code from under the QR instead.");
+        });
+    }
+
+    function stop() {
+      if (raf) { cancelAnimationFrame(raf); raf = null; }
+      if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+      var torchBtn = document.getElementById("torchBtn");
+      if (torchBtn) torchBtn.classList.remove("on");
+    }
+
+    return { start: start, stop: stop, codeFrom: codeFrom };
+  })();
+
+  document.getElementById("scanBtn").addEventListener("click", function () {
+    show("scan");
+    Scanner.start();
+  });
+
+  document.getElementById("scanBackBtn").addEventListener("click", function () {
+    paintGrid();
+    show("hunt");
+  });
+
+  /* Leaving the page with the camera running would hold the torch on and
+     drain the battery in a pocket. */
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) Scanner.stop();
+  });
+  window.addEventListener("pagehide", function () { Scanner.stop(); });
 
   /* ---------- manual code entry ---------- */
 
