@@ -203,6 +203,16 @@ signs are unaffected, because they only ever refer to codes.
 Jill Be Little genuinely tiny beside a Grizzly Bear in the grid, which is an
 identification aid, not decoration. Keep it roughly honest.
 
+### Photographs
+
+The artwork is placeholder illustration. **It should be replaced with photos of
+the patch's own pumpkins**, not stock images: stock is a copyright liability on
+a commercial site, and a generic photo of a Crown Prince is less use for
+identification than a picture of the one actually growing in that field.
+
+Twenty minutes with a phone on an overcast day covers it. Shoot each variety
+on its own, from the side, filling the frame, against something plain.
+
 ### Swapping in real photographs
 
 The artwork is placeholder SVG. Real cut-out photos drop straight in:
@@ -223,9 +233,11 @@ Keep the full-resolution originals for print — different job, different rules.
 
 ## Before opening on the 4th
 
-- [ ] **Confirm Grizzly Bear and Galaxy of Stars** with whoever bought the
-      seed. Their descriptions are the two I am least sure of, and they get
-      read while somebody is stood next to the actual pumpkin.
+- [ ] **Spot-check the six unverified descriptions** with whoever bought the
+      seed. Crown Prince, Grizzly Bear, Galaxy of Stars and Porcelain Doll
+      have been checked against seed-supplier sources; the other six rest on
+      general knowledge and get read while somebody is stood next to the real
+      thing.
 - [ ] Freeze the site address, then print. That URL is laminated and staked
       in a field — it cannot be changed afterwards.
 - [ ] Matte laminate. Really.

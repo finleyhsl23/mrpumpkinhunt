@@ -88,8 +88,19 @@
 
     <div class="finish-cta">
       <button class="btn btn-primary" id="scanBtn">&#128247;&nbsp; Scan a sign</button>
-      <button class="btn btn-ghost" id="finishBtn" disabled style="margin-top:11px">Finish the hunt</button>
+      <button class="btn btn-ghost" id="finishBtn" style="margin-top:11px">Finish the hunt</button>
       <p class="finish-hint" id="finishHint">Find all ten to finish.</p>
+
+      <!-- Stopping early is allowed - families run out of time, patience or
+           daylight. It asks once so nobody ends the hunt by accident. -->
+      <div class="confirm hide" id="confirmEarly">
+        <h3 id="confirmTitle">Finish now?</h3>
+        <p id="confirmBody"></p>
+        <div class="row">
+          <button class="btn btn-ghost" id="confirmNo">Keep hunting</button>
+          <button class="btn btn-primary" id="confirmYes">Finish</button>
+        </div>
+      </div>
     </div>
 
     <footer class="foot">
@@ -101,8 +112,9 @@
   <!-- ==================== 3b. SCAN ==================== -->
   <section class="screen hide" id="screenScan" style="padding-top:20px">
     <div class="stack" style="margin-bottom:14px">
-      <h2>Scan a pumpkin sign</h2>
+      <h2 id="scanHeading">Scan a pumpkin sign</h2>
       <p id="scanSub">Point your camera at the code on the sign.</p>
+      <p class="hint-text" id="scanHint"></p>
     </div>
 
     <div class="scan-stage" id="scanStage">
@@ -134,9 +146,9 @@
   <section class="screen hide" id="screenDone" style="padding-top:22px">
     <div class="card card-warm stack">
       <div class="trophy">
-        <div class="trophy-ring" aria-hidden="true">&#127875;</div>
-        <span class="eyebrow" style="justify-content:center">All ten found</span>
-        <h1 style="margin-top:10px;font-size:clamp(28px,7.4vw,38px)">That&rsquo;s the lot. Well done.</h1>
+        <div class="trophy-ring" id="doneTrophy" aria-hidden="true">&#127875;</div>
+        <span class="eyebrow" id="doneEyebrow" style="justify-content:center">All ten found</span>
+        <h1 id="doneTitle" style="margin-top:10px;font-size:clamp(28px,7.4vw,38px)">That&rsquo;s the lot. Well done.</h1>
       </div>
 
       <!-- Already gave us an address on the way in: nothing more to ask. -->
@@ -225,7 +237,9 @@
       '<div class="tile-art"><img src="' + Hunt.artFor(p) + '" alt="" style="height:' + h + 'px" loading="lazy"></div>' +
       '<div class="tile-name">' + p.name + "</div>" +
       '<div class="tile-sub">' + (found ? p.bestFor : (p.hint || "Still to find")) + "</div>" +
-      (found ? '<div class="badge badge-found" aria-hidden="true">&#10003;</div>' : "");
+      (found
+        ? '<div class="badge badge-found" aria-hidden="true">&#10003;</div>'
+        : '<button class="tile-scan" data-scan="' + p.slug + '">Scan this one</button>');
 
     el.setAttribute("aria-label", p.name + (found ? ", found" : ", not found yet. " + (p.hint || "")));
     return el;
@@ -245,10 +259,10 @@
         ? "Ten to find. Scan the sign beside any pumpkin."
         : left + (left === 1 ? " still out there." : " still out there.") + " Tap any you’ve found to read it again.";
 
-    document.getElementById("finishBtn").disabled = !complete;
     document.getElementById("finishHint").textContent = complete
       ? "Nicely done — finish up and we’ll send your guide."
-      : left + (left === 1 ? " more to find." : " more to find.");
+      : left + " more to find, or finish whenever you like.";
+    document.getElementById("confirmEarly").classList.add("hide");
 
     Hunt.paintProgress();
   }
@@ -263,6 +277,15 @@
   }
 
   function paintDone() {
+    var n = Hunt.foundCount();
+    var complete = Hunt.isComplete();
+    document.getElementById("doneEyebrow").textContent = complete
+      ? "All ten found" : n + " of " + Hunt.total() + " found";
+    document.getElementById("doneTitle").textContent = complete
+      ? "That\u2019s the lot. Well done."
+      : n === 0 ? "Maybe next time." : "Nicely done.";
+    document.getElementById("doneTrophy").textContent = complete ? "\uD83C\uDF83" : "\uD83C\uDF42";
+
     var saved = Hunt.email();
     document.getElementById("doneSaved").classList.toggle("hide", !saved);
     document.getElementById("doneAsk").classList.toggle("hide", !!saved);
@@ -302,19 +325,45 @@
   /* ---------- finish ---------- */
 
   document.getElementById("finishBtn").addEventListener("click", function () {
-    if (!Hunt.isComplete()) return;
+    if (!Hunt.isComplete()) {
+      var n = Hunt.foundCount();
+      document.getElementById("confirmTitle").textContent =
+        n === 0 ? "Finish without finding any?" : "Finish with " + n + " of " + Hunt.total() + "?";
+      document.getElementById("confirmBody").textContent =
+        n === 0
+          ? "You haven\u2019t found any yet \u2014 you can pick this up again on this phone whenever you like."
+          : "We\u2019ll send a guide to the " + n + " you found, and the rest will keep till next time.";
+      var box = document.getElementById("confirmEarly");
+      box.classList.remove("hide");
+      box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return;
+    }
+    doFinish();
+  });
+
+  document.getElementById("confirmNo").addEventListener("click", function () {
+    document.getElementById("confirmEarly").classList.add("hide");
+  });
+
+  document.getElementById("confirmYes").addEventListener("click", function () {
+    document.getElementById("confirmEarly").classList.add("hide");
+    doFinish();
+  });
+
+  function doFinish() {
     Hunt.finish();
     Hunt.track("complete", {});
     paintDone();
     show("done");
-    Hunt.celebrate();
+    /* Confetti only for a full ten - it would ring hollow at six. */
+    if (Hunt.isComplete()) Hunt.celebrate();
 
     /* Address already in hand from the start screen - send without asking
        again. A failure here is silent on purpose: the guide is on screen
        either way, and nobody wants an error at the happy ending. */
     var saved = Hunt.email();
     if (saved) Hunt.sendGuide(saved, "").catch(function () {});
-  });
+  }
 
   document.getElementById("doneForm").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -497,9 +546,30 @@
   })();
 
   document.getElementById("scanBtn").addEventListener("click", function () {
+    openScanner(null);
+  });
+
+  /* Delegated: tiles are rebuilt on every repaint, so per-tile listeners
+     would go stale. */
+  grid.addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest(".tile-scan") : null;
+    if (!btn) return;
+    e.preventDefault();
+    openScanner(btn.getAttribute("data-scan"));
+  });
+
+  /* `looking` only changes the wording. Any valid sign is still accepted and
+     counted - telling a child "that's the wrong pumpkin" when they have just
+     found a real one would be daft. */
+  function openScanner(looking) {
+    var p = looking ? Hunt.bySlug(looking) : null;
+    document.getElementById("scanHeading").textContent = p ? "Find the " + p.name : "Scan a pumpkin sign";
+    document.getElementById("scanHint").textContent = p
+      ? (p.hint || "Point your camera at the code on its sign.")
+      : "Any sign will do \u2014 point your camera at its code.";
     show("scan");
     Scanner.start();
-  });
+  }
 
   document.getElementById("scanBackBtn").addEventListener("click", function () {
     paintGrid();

@@ -550,3 +550,37 @@ body.is-offline .offline { display: block }
 .torch.on { background: var(--orange); color: #2b1503; border-color: transparent }
 
 @media (prefers-reduced-motion: reduce) { .scan-frame i::after { animation: none } }
+
+/* ---------- per-tile scan ---------- */
+
+.tile-scan {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 8px;
+  border-radius: 99px;
+  border: 1px solid rgba(249, 115, 22, .42);
+  background: rgba(249, 115, 22, .12);
+  color: var(--orange-3);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tile-scan:active { background: rgba(249, 115, 22, .24) }
+.tile.found .tile-scan { display: none }
+
+/* ---------- finishing early ---------- */
+
+.confirm {
+  margin-top: 14px;
+  padding: 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-warm);
+  background: var(--night-2);
+}
+.confirm h3 { margin: 0 0 6px; font-size: 18px; font-weight: 700 }
+.confirm p { font-size: 14px; margin-bottom: 14px }
+.confirm .row { display: flex; gap: 10px }
+.confirm .row .btn { font-size: 15px; padding: 13px 16px }
