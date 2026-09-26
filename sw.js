@@ -8,7 +8,7 @@
  * Bump CACHE when anything in SHELL changes, or phones keep serving the old
  * copy until their site data is cleared.
  */
-var CACHE = "mrpumpkin-v9";
+var CACHE = "mrpumpkin-v12";
 
 /* Canonical, extensionless paths only.
  *
@@ -96,6 +96,19 @@ self.addEventListener("fetch", function (event) {
 
   var isNavigation = req.mode === "navigate";
 
+  /* Code must never be older than the page that loads it.
+   *
+   * Pages went network-first but assets stayed cache-first, which paired a
+   * fresh index.html with a stale app.js - and a page calling a function its
+   * cached script did not have yet died with "Hunt.resetAll is not a
+   * function". Anything small enough to be cheap (the scripts, the data, the
+   * stylesheet) now travels with the page.
+   *
+   * The heavy, content-stable things - pumpkin artwork and the scanner
+   * library - stay cache-first. They are what makes the precache worth
+   * having, and they only change when CACHE is bumped. */
+  var isCode = /^\/assets\/(app\.js|pumpkins\.js|styles\.css)$/.test(url.pathname);
+
   /* Every /p/<code> is the same document, so one cached copy answers all ten
      signs - including the nine not scanned yet. */
   var lookup = /^\/p\//.test(url.pathname) ? "/found" : req;
@@ -111,8 +124,8 @@ self.addEventListener("fetch", function (event) {
    * when offline, because the timeout below falls straight back to the cache.
    * Assets stay cache-first: they are the heavy part, and bumping CACHE is
    * what releases new ones. */
-  if (isNavigation) {
-    event.respondWith(networkFirst(req, lookup));
+  if (isNavigation || isCode) {
+    event.respondWith(networkFirst(req, lookup, isNavigation));
     return;
   }
 
@@ -133,14 +146,19 @@ self.addEventListener("fetch", function (event) {
   );
 });
 
-function networkFirst(req, lookup) {
+function networkFirst(req, lookup, isNav) {
   /* A field with one bar is worse than no bars: the request neither fails
      nor arrives. Race it, and take the cache if the network dawdles. */
   var timeout = new Promise(function (resolve) {
     setTimeout(function () { resolve(null); }, 2500);
   });
 
-  var live = fetch(req)
+  /* Fetch by URL with cache: "no-cache" rather than passing the Request
+     through. The browser's own HTTP cache sits in front of the worker, and
+     it will happily answer with the stale copy it already has - which is
+     how a fresh page ended up running last week's script even once this
+     function was network-first. Revalidating forces a real check. */
+  var live = fetch(req.url, { cache: "no-cache", credentials: "same-origin" })
     .then(cleanResponse)
     .then(function (res) {
       if (res && res.ok) {
@@ -158,7 +176,10 @@ function networkFirst(req, lookup) {
     return caches.match(lookup, { ignoreSearch: true }).then(function (hit) {
       if (hit && !hit.redirected) return hit;
       return live.then(function (late) {
-        return (late && late.ok) ? late : caches.match("/");
+        if (late && late.ok) return late;
+        /* Only a navigation may fall back to the shell. Handing index.html
+           back in place of a stylesheet or a script is worse than failing. */
+        return isNav ? caches.match("/") : Response.error();
       });
     });
   });

@@ -197,11 +197,19 @@ export async function onRequestPost({ request, env }) {
   });
 
   if (!sent.ok) {
-    /* Logged in full because the usual cause is a From domain that is not
-       verified, and the message says exactly that. */
-    const detail = await sent.text().catch(() => "");
-    console.log("send-guide: resend rejected", sent.status, "from:", from, detail.slice(0, 400));
-    return json({ error: "could not send" }, 502);
+    /* Resend's own message names the cause - almost always a From domain
+       that is not verified for sending. It contains no secret (the From
+       address travels in every email header anyway), so it is handed back
+       rather than swallowed. A silent 502 cost us two rounds of guessing. */
+    const raw = await sent.text().catch(() => "");
+    let detail = raw.slice(0, 300);
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.message) detail = String(parsed.message).slice(0, 300);
+    } catch { /* not JSON; the raw text will do */ }
+
+    console.log("send-guide: resend rejected", sent.status, "from:", from, detail);
+    return json({ error: "could not send", status: sent.status, from, detail }, 502);
   }
 
   try {

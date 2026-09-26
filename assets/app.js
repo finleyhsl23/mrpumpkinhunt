@@ -109,11 +109,24 @@
 
       if (!navigator.onLine) { Hunt.queue(body); return; }
 
+      /* sendBeacon, not fetch: a find is recorded microseconds before the
+       * page navigates to the pumpkin, and beacons are the one API designed
+       * to survive that. A keepalive fetch mostly does too, but it is held
+       * open by the browser afterwards, which is both untidy and a nuisance
+       * to test around. */
+      var payload = JSON.stringify(body);
+      if (navigator.sendBeacon) {
+        var sent = false;
+        try {
+          sent = navigator.sendBeacon("/api/track", new Blob([payload], { type: "application/json" }));
+        } catch (e) { sent = false; }
+        if (sent) return;
+      }
+
       fetch("/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        keepalive: true,
+        body: payload,
       }).catch(function () { Hunt.queue(body); });
     },
 
@@ -173,6 +186,13 @@
         /* Hand back why, not just whether: a deployment missing its Resend
            key looks identical to a network blip otherwise. */
         return r.json().catch(function () { return {}; }).then(function (body) {
+          /* Whoever is setting the site up is reading the console; the
+             visitor only ever sees the friendly wording. */
+          if (!r.ok && body && body.detail) {
+            try {
+              console.warn("guide email rejected:", r.status, body.from || "", body.detail);
+            } catch (e) { /* no console, no matter */ }
+          }
           return { ok: r.ok, reason: body && body.error ? body.error : "" };
         });
       });
