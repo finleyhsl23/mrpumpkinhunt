@@ -32,7 +32,7 @@ network switched off.
 
 ```
 index.html                  the hunt: intro, collection grid, manual code entry, finish
-p.html                      one pumpkin — every /p/<code> serves this
+found.html                  one pumpkin — every /p/<code> serves this
 privacy.html                what we do with an email address
 qr.html                     printable sign sheet + staff key  (/qr)
 assets/pumpkins.js          THE CONTENT FILE — names, descriptions, codes
@@ -98,6 +98,37 @@ not print with the signs. Keep it at the gate. The signs must give nothing
 away or there is no hunt.
 
 ---
+
+## Routing, and a trap worth knowing about
+
+The QR signs encode `/p/<code>`. A single document, `found.html`, answers all
+ten; the page reads the code out of the path.
+
+**The `_redirects` destination must be extensionless.** Cloudflare Pages
+serves `found.html` at `/found` and 301s `/found.html` to it. That 301 leaks
+through a 200 proxy, so the service worker cached a *redirected* response -
+and a browser will not serve one of those for a navigation. Safari failed the
+whole page with:
+
+```
+Response served by service worker has redirections
+```
+
+which looked like a broken QR code and was nothing of the sort. Chromium
+tolerated it, so it only showed up on an iPhone.
+
+Two consequences, both of which must be preserved:
+
+- `_redirects` points at `/found`, never `/found.html`, and `/privacy` and
+  `/qr` need no rules at all because Pages already serves them
+  extensionlessly.
+- `sw.js` precaches canonical paths only, and `cleanResponse()` rebuilds any
+  response that still arrives redirected so the flag can never reach the
+  cache.
+
+The dev server in the test harness reproduces Pages' extensionless serving
+and its `.html` 301 deliberately, so this class of bug fails on a laptop
+rather than on a phone in a field.
 
 ## Deploying
 

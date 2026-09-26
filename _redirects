@@ -1,7 +1,13 @@
 # The QR signs encode /p/<code>. One document answers every code; the page
-# reads the code out of the path. Short URLs make a coarser, faster-scanning
-# QR, which matters in a dark field.
-/p/*        /p.html        200
+# reads the code out of the path.
+#
+# The destination is deliberately extensionless. Pages serves `found.html` at
+# `/found` and 301s `/found.html` to it - and that 301 leaks through a 200
+# proxy, which poisons the service worker cache with a redirected response.
+# Browsers refuse to serve those for navigations, so a scanned sign died with
+# "Response served by service worker has redirections". Naming the canonical
+# path here avoids the redirect entirely.
+/p/*  /found  200
 
-/privacy    /privacy.html  200
-/qr         /qr.html       200
+# /privacy and /qr need no rules: Pages already serves privacy.html and
+# qr.html at their extensionless paths.

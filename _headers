@@ -10,6 +10,9 @@
 /p/*
   Cache-Control: no-cache, no-store, must-revalidate
 
+/found
+  Cache-Control: no-cache, no-store, must-revalidate
+
 # The service worker itself must never be cached, or a bad deploy is
 # permanent on every phone that saw it.
 /sw.js
