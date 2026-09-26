@@ -173,9 +173,13 @@ subtly wrong, and no need to add `mrpumpkin` to Supabase's exposed schemas.
 ### Is it configured?
 
 Open **`/api/health`** in a browser. It reports which environment variables
-are present (booleans only - no key or secret is ever returned) and names the
-sending domain, which must be verified in Resend or every email is rejected
-before it is even logged.
+are present and, more usefully, **actually reads a row from the database** and
+reports what came back.
+
+That last part is the point. An earlier version only checked whether the
+variables were set, and cheerfully said Supabase was configured while every
+write was being rejected. A check that does not make a real request is not a
+check.
 
 That endpoint exists because the first silent failure cost an evening: the
 guide email was not sending, nothing appeared in the Resend dashboard, and
@@ -184,10 +188,23 @@ unverified domain, or an undeployed function.
 
 ### Database
 
-Run `supabase/001_mrpumpkin_schema.sql`, then
-`supabase/002_returning_visitors.sql`. It creates the `mrpumpkin`
-schema, two tables and two views. In November the whole thing is
+Run `supabase/001_mrpumpkin_schema.sql` once. It creates the `mrpumpkin`
+schema, four tables and three views. In November the whole thing is
 `drop schema mrpumpkin cascade;` and the core database is untouched.
+
+### The one manual step
+
+**Supabase → Project Settings → API → Exposed schemas → add `mrpumpkin`.**
+
+Nothing works without it. PostgREST refuses to serve a schema that is not on
+that list — the service role bypasses row-level security, not that. Miss it
+and every write returns an error the functions swallow (deliberately, so a
+database problem cannot spoil a visit), which looks exactly like nothing
+happening at all. It cost days here.
+
+Exposing the schema makes it visible to the Data API, so the migration denies
+`anon` and `authenticated` explicitly and grants only `service_role`, which is
+what the Pages functions use.
 
 Two views worth reading during the season:
 

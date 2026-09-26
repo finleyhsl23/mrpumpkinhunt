@@ -1,9 +1,15 @@
-/* Shared helpers for the two endpoints.
+/* Shared helpers for the API endpoints.
  *
  * The browser never talks to Supabase directly. Everything goes through these
- * functions with the service role key, which means there is no anon key in
- * the client to lift, no RLS policy to get subtly wrong, and no need to add
- * the schema to Supabase's exposed-schemas list.
+ * functions with the service role key, so there is no anon key in the client
+ * to lift and no RLS policy to get subtly wrong.
+ *
+ * Tables live in their own `mrpumpkin` schema, keeping a seasonal one-off out
+ * of the core database - November's clean-up is one DROP SCHEMA. That schema
+ * MUST be added to the project's "Exposed schemas" list in Supabase, and the
+ * service role granted usage on it, or PostgREST will not serve it and every
+ * write fails silently. Both are in supabase/001_mrpumpkin_schema.sql and the
+ * README.
  */
 
 export function json(body, status = 200) {
@@ -30,8 +36,10 @@ export async function sb(env, path, init = {}) {
       apikey: env.SUPABASE_SERVICE_ROLE_KEY,
       Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
       "Content-Type": "application/json",
-      /* The hunt's tables live in their own schema, kept away from the rest
-         of the SmartCore database so November's clean-up is one DROP. */
+      /* The hunt's tables live in their own schema, so the request has to say
+         so. These headers only work once `mrpumpkin` is in the project's
+         "Exposed schemas" list - without that PostgREST refuses to serve it,
+         whatever key is used, and every write fails silently. */
       "Accept-Profile": "mrpumpkin",
       "Content-Profile": "mrpumpkin",
       ...(init.headers || {}),
