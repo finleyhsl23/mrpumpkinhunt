@@ -177,7 +177,7 @@
       </div>
 
       <div id="doneMsg"></div>
-      <button class="btn btn-ghost" id="backBtn">Look back through the ten</button>
+      <button class="btn btn-ghost" id="backBtn">View your 10</button>
     </div>
 
     <footer class="foot">
@@ -285,6 +285,8 @@
       ? "That\u2019s the lot. Well done."
       : n === 0 ? "Maybe next time." : "Nicely done.";
     document.getElementById("doneTrophy").textContent = complete ? "\uD83C\uDF83" : "\uD83C\uDF42";
+    document.getElementById("backBtn").textContent =
+      n === 0 ? "Back to the hunt" : n === 1 ? "View the one you found" : "View your " + n;
 
     var saved = Hunt.email();
     document.getElementById("doneSaved").classList.toggle("hide", !saved);
