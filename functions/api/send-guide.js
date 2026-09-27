@@ -59,7 +59,7 @@ function buildEmail(name, foundSlugs) {
              style="background:${CREAM};border-radius:14px;border:1px solid #efe2d1">
         <tr>
           <td width="140" valign="top" style="padding:12px 0 12px 12px">
-            <img src="${SITE}/assets/pumpkins/email/${slug}.jpg" width="128" height="128" alt="${esc(v.name)}"
+            <img src="${SITE}/assets/pumpkins/thumb/${slug}.jpg" width="128" height="128" alt="${esc(v.name)}"
                  style="display:block;width:128px;height:128px;border:0;border-radius:12px">
           </td>
           <td valign="top" style="padding:12px 16px 12px 14px">

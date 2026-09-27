@@ -39,6 +39,10 @@
   <!-- ==================== 1. START ==================== -->
   <section class="screen" id="screenStart" style="padding-top:22px">
     <div class="card hero-card stack">
+      <!-- A taste of what is out there. An app about looking at pumpkins
+           should show one before it asks anybody to walk into a field.
+           Filled from the variety list so it cannot drift out of step. -->
+      <div class="hero-strip" id="heroStrip" aria-hidden="true"></div>
       <span class="eyebrow">Mr Pumpkin &middot; Derby</span>
       <h1>Ten pumpkins are hiding in the patch.</h1>
       <p class="lede">We grow over fifty varieties. Ten of them have a sign beside them somewhere in the field &mdash; scan one and that pumpkin joins your collection.</p>
@@ -300,6 +304,38 @@
      what they actually got, so the ones they missed would only be a reminder
      of what they did not find - it shows their own collection and nothing
      else. */
+  /* Four of the photographs plus a count of the rest. Curated rather than
+     the first four, so the strip shows the range - a blue one, a warty one,
+     a pink one, a classic orange one - which is the argument for walking
+     round the whole field. */
+  function paintHero() {
+    var strip = document.getElementById("heroStrip");
+    if (!strip) return;
+
+    var wanted = ["crown-prince", "warty-goblin", "porcelain-doll", "magic-lantern"];
+    var picks = wanted
+      .map(function (slug) {
+        return window.PUMPKINS.filter(function (p) { return p.slug === slug; })[0];
+      })
+      .filter(Boolean);
+
+    // If a slug is ever renamed, fall back rather than render a gap.
+    if (picks.length < 4) picks = window.PUMPKINS.slice(0, 4);
+
+    var html = picks
+      .map(function (p) {
+        /* The thumbnail, not the full photograph: these render about 75px
+           wide, and this is the first thing to load at a gate with one bar
+           of signal. It is a fifteenth of the bytes. */
+        return '<img src="/assets/pumpkins/thumb/' + p.slug + '.jpg" alt="" decoding="async">';
+      })
+      .join("");
+
+    var rest = Hunt.total() - picks.length;
+    html += '<span class="hero-more">+' + rest + "</span>";
+    strip.innerHTML = html + '<i class="hero-strip-fade"></i>';
+  }
+
   function paintGrid() {
     var reviewing = Hunt.hasFinished();
     var list = reviewing
@@ -341,6 +377,7 @@
   /* ---------- routing between screens ---------- */
 
   function route() {
+    paintHero();
     if (Hunt.hasFinished()) { paintDone(); show("done"); return; }
     if (!Hunt.hasStarted()) { show("start"); return; }
     paintGrid();

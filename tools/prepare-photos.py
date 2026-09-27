@@ -96,6 +96,7 @@ def save_under_budget(img, path):
 
 
 # Twice the 128px the email renders them at, so they stay sharp on a phone.
+# The start screen shows them smaller still.
 MAIL_PX = 256
 
 
@@ -129,12 +130,13 @@ def main(src_dir, out_dir, cutout=False):
         total += size
         flag = "" if size <= MAX_BYTES else "   <-- OVER BUDGET"
 
-        # The guide email cannot use the WebP above: Outlook on Windows and
-        # older Apple Mail will not render it, and an email that shows broken
-        # images is worse than one showing none. JPEG is the one photographic
-        # format every mail client has always understood. Written at twice its
-        # display size so it stays sharp on a phone screen.
-        mail_dir = os.path.join(out_dir, "email")
+        # A small thumbnail, used by the guide email and by the strip across
+        # the top of the start screen. JPEG rather than the WebP above because
+        # the guide email cannot use WebP: Outlook on Windows and older Apple
+        # Mail will not render it, and an email full of broken images is worse
+        # than one with none. Written at twice its display size so it stays
+        # sharp on a phone screen.
+        mail_dir = os.path.join(out_dir, "thumb")
         os.makedirs(mail_dir, exist_ok=True)
         thumb = cv2.resize(img[:, :, :3], (MAIL_PX, MAIL_PX), interpolation=cv2.INTER_AREA)
         mail_out = os.path.join(mail_dir, slug + ".jpg")
@@ -146,7 +148,7 @@ def main(src_dir, out_dir, cutout=False):
               f"   email {mail_size/1024:4.1f}KB{flag}")
 
     print(f"\n  {len(names)} photographs, {total/1024:.0f}KB for the site"
-          f" and {mail_total/1024:.0f}KB of email thumbnails")
+          f" and {mail_total/1024:.0f}KB of thumbnails")
     if total > 1_500_000:
         print("  WARNING: over 1.5MB. That will slow the precache at the gate.")
     return 0

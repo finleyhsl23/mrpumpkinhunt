@@ -8,7 +8,7 @@
  * Bump CACHE when anything in SHELL changes, or phones keep serving the old
  * copy until their site data is cleared.
  */
-var CACHE = "mrpumpkin-v21";
+var CACHE = "mrpumpkin-v22";
 
 /* Canonical, extensionless paths only.
  *
@@ -38,6 +38,14 @@ var SHELL = [
   "/assets/pumpkins/tiny-turk.webp",
   "/assets/pumpkins/porcelain-doll.webp",
   "/assets/pumpkins/magic-lantern.webp",
+
+  /* The four thumbnails in the start screen's strip. Without these the very
+     first thing a returning visitor sees, offline at the gate, is four broken
+     images. */
+  "/assets/pumpkins/thumb/crown-prince.jpg",
+  "/assets/pumpkins/thumb/warty-goblin.jpg",
+  "/assets/pumpkins/thumb/porcelain-doll.jpg",
+  "/assets/pumpkins/thumb/magic-lantern.jpg",
 ];
 
 /* Strips the redirected flag by rebuilding the response. A response that
