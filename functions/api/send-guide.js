@@ -58,11 +58,11 @@ function buildEmail(name, foundSlugs) {
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              style="background:${CREAM};border-radius:14px;border:1px solid #efe2d1">
         <tr>
-          <td width="84" valign="middle" style="padding:12px 0 12px 12px">
-            <img src="${SITE}/assets/pumpkins/png/${slug}.png" width="72" height="72" alt="${esc(v.name)}"
-                 style="display:block;width:72px;height:72px;border:0;border-radius:12px">
+          <td width="140" valign="top" style="padding:12px 0 12px 12px">
+            <img src="${SITE}/assets/pumpkins/email/${slug}.jpg" width="128" height="128" alt="${esc(v.name)}"
+                 style="display:block;width:128px;height:128px;border:0;border-radius:12px">
           </td>
-          <td valign="middle" style="padding:12px 16px 12px 14px">
+          <td valign="top" style="padding:12px 16px 12px 14px">
             <div style="font:700 17px/1.25 Georgia,'Times New Roman',serif;color:${INK}">${esc(v.name)}</div>
             <div style="font:700 11px/1.6 Arial,Helvetica,sans-serif;color:${ORANGE};letter-spacing:.09em;text-transform:uppercase">${esc(v.best)}</div>
             <div style="font:400 13px/1.55 Arial,Helvetica,sans-serif;color:${MUTED};padding-top:4px">${esc(v.note)}</div>

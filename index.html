@@ -276,8 +276,12 @@
       '<div class="tile-art"><img src="' + Hunt.artFor(p) + '" alt="' + esc(p.name) + '" loading="lazy"></div>' +
       '<div class="tile-name">' + p.name + "</div>" +
       '<div class="tile-sub">' + (found ? p.bestFor : (p.hint || "Still to find")) + "</div>" +
+      /* Both states end in a control at the same height, so the row reads as
+         one line. The found tile is already an <a>, so this is a span rather
+         than a nested link or a button that would swallow the tile's click. */
       (found
-        ? '<div class="badge badge-found" aria-hidden="true">&#10003;</div>'
+        ? '<div class="badge badge-found" aria-hidden="true">&#10003;</div>' +
+          '<span class="tile-view">View</span>'
         : '<button class="tile-scan" data-scan="' + p.slug + '">Scan this one</button>');
 
     el.setAttribute("aria-label", p.name + (found ? ", found" : ", not found yet. " + (p.hint || "")));

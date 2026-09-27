@@ -573,9 +573,12 @@ body.is-offline .offline { display: block }
 
 @media (prefers-reduced-motion: reduce) { .scan-frame i::after { animation: none } }
 
-/* ---------- per-tile scan ---------- */
+/* ---------- per-tile controls ---------- */
 
-.tile-scan {
+/* "Scan this one" and "View" share their geometry so that whichever state a
+   tile is in, its control sits on the same line as its neighbour's. */
+.tile-scan,
+.tile-view {
   display: block;
   width: 100%;
   margin-top: auto;   /* pin to the bottom of the tile */
@@ -591,7 +594,16 @@ body.is-offline .offline { display: block }
   -webkit-tap-highlight-color: transparent;
 }
 .tile-scan:active { background: rgba(249, 115, 22, .24) }
-.tile.found .tile-scan { display: none }
+
+/* Muted rather than orange: a found pumpkin is done, so it should not compete
+   for attention with the ones still to scan. */
+.tile-view {
+  border-color: transparent;
+  background: rgba(255, 255, 255, .07);
+  color: var(--muted);
+  text-align: center;
+}
+.tile.found:active .tile-view { background: rgba(255, 255, 255, .13) }
 
 /* ---------- finishing early ---------- */
 

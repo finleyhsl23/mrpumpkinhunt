@@ -95,6 +95,10 @@ def save_under_budget(img, path):
     return q, size
 
 
+# Twice the 128px the email renders them at, so they stay sharp on a phone.
+MAIL_PX = 256
+
+
 def main(src_dir, out_dir, cutout=False):
     os.makedirs(out_dir, exist_ok=True)
     names = sorted(
@@ -106,6 +110,7 @@ def main(src_dir, out_dir, cutout=False):
         return 1
 
     total = 0
+    mail_total = 0
     for name in names:
         slug = os.path.splitext(name)[0]
         raw = cv2.imread(os.path.join(src_dir, name), cv2.IMREAD_UNCHANGED)
@@ -123,9 +128,25 @@ def main(src_dir, out_dir, cutout=False):
         q, size = save_under_budget(img, out)
         total += size
         flag = "" if size <= MAX_BYTES else "   <-- OVER BUDGET"
-        print(f"  {slug:<18} {img.shape[1]}x{img.shape[0]}  {size/1024:5.1f}KB  q{q}{flag}")
 
-    print(f"\n  {len(names)} photographs, {total/1024:.0f}KB total")
+        # The guide email cannot use the WebP above: Outlook on Windows and
+        # older Apple Mail will not render it, and an email that shows broken
+        # images is worse than one showing none. JPEG is the one photographic
+        # format every mail client has always understood. Written at twice its
+        # display size so it stays sharp on a phone screen.
+        mail_dir = os.path.join(out_dir, "email")
+        os.makedirs(mail_dir, exist_ok=True)
+        thumb = cv2.resize(img[:, :, :3], (MAIL_PX, MAIL_PX), interpolation=cv2.INTER_AREA)
+        mail_out = os.path.join(mail_dir, slug + ".jpg")
+        cv2.imwrite(mail_out, thumb, [cv2.IMWRITE_JPEG_QUALITY, 82, cv2.IMWRITE_JPEG_OPTIMIZE, 1])
+        mail_size = os.path.getsize(mail_out)
+        mail_total += mail_size
+
+        print(f"  {slug:<18} {img.shape[1]}x{img.shape[0]}  {size/1024:5.1f}KB  q{q}"
+              f"   email {mail_size/1024:4.1f}KB{flag}")
+
+    print(f"\n  {len(names)} photographs, {total/1024:.0f}KB for the site"
+          f" and {mail_total/1024:.0f}KB of email thumbnails")
     if total > 1_500_000:
         print("  WARNING: over 1.5MB. That will slow the precache at the gate.")
     return 0
