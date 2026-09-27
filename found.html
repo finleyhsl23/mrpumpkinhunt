@@ -75,9 +75,14 @@
     var n = Hunt.foundCount();
     var left = Hunt.total() - n;
 
-    var next = Hunt.isComplete()
-      ? '<a class="btn btn-primary" href="/">That&rsquo;s all ten &mdash; finish the hunt</a>'
-      : '<a class="btn btn-primary" href="/">' + left + (left === 1 ? " left to find" : " more to find") + "</a>";
+    /* Once they have finished there is nothing left to find, so counting off
+       what is missing would only be nagging about a hunt that is already
+       over. The only thing left to do is go back to the summary. */
+    var next = Hunt.hasFinished()
+      ? '<a class="btn btn-primary" href="/">Continue</a>'
+      : Hunt.isComplete()
+        ? '<a class="btn btn-primary" href="/">That&rsquo;s all ten &mdash; finish the hunt</a>'
+        : '<a class="btn btn-primary" href="/">' + left + (left === 1 ? " left to find" : " more to find") + "</a>";
 
     main.innerHTML =
       '<section class="stack-lg">' +

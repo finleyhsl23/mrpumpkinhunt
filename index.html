@@ -101,7 +101,14 @@
 
     <div class="grid" id="grid"></div>
 
-    <div class="finish-cta">
+    <!-- Shown instead of the scan/finish block once the hunt is finished:
+         there is nothing left to scan and nothing left to finish, so the only
+         way out of here is back to the summary. -->
+    <div class="finish-cta hide" id="reviewCta">
+      <button class="btn btn-ghost" id="reviewBackBtn">Continue</button>
+    </div>
+
+    <div class="finish-cta" id="huntCta">
       <button class="btn btn-primary" id="scanBtn">&#128247;&nbsp; Scan a sign</button>
       <button class="btn btn-ghost" id="finishBtn" style="margin-top:11px">Finish the hunt</button>
       <p class="finish-hint" id="finishHint">Find all ten to finish.</p>
@@ -288,23 +295,44 @@
     return el;
   }
 
+  /* Two modes. During the hunt the grid is the checklist, so it shows all ten
+     including the ones still out there. Once finished it becomes a keepsake of
+     what they actually got, so the ones they missed would only be a reminder
+     of what they did not find - it shows their own collection and nothing
+     else. */
   function paintGrid() {
+    var reviewing = Hunt.hasFinished();
+    var list = reviewing
+      ? window.PUMPKINS.filter(function (p) { return Hunt.isFound(p.slug); })
+      : window.PUMPKINS;
+
     grid.innerHTML = "";
-    window.PUMPKINS.forEach(function (p) { grid.appendChild(tile(p)); });
+    list.forEach(function (p) { grid.appendChild(tile(p)); });
 
     var n = Hunt.foundCount();
     var left = Hunt.total() - n;
     var complete = Hunt.isComplete();
 
-    document.getElementById("gridSub").textContent = complete
-      ? "Every one of them. Tap any to read it again."
-      : n === 0
-        ? "Ten to find. Scan the sign beside any pumpkin."
-        : left + (left === 1 ? " still out there." : " still out there.") + " Tap any you’ve found to read it again.";
+    document.getElementById("gridHeading").textContent = reviewing
+      ? (n === 1 ? "The one you found" : "The " + n + " you found")
+      : "Your collection";
 
-    document.getElementById("finishHint").textContent = complete
-      ? "Nicely done — finish up and we’ll send your guide."
-      : left + " more to find, or finish whenever you like.";
+    document.getElementById("gridSub").textContent = reviewing
+      ? (n === 1 ? "Tap it to read it again." : "Tap any of them to read it again.")
+      : complete
+        ? "Every one of them. Tap any to read it again."
+        : n === 0
+          ? "Ten to find. Scan the sign beside any pumpkin."
+          : left + " still out there. Tap any you’ve found to read it again.";
+
+    document.getElementById("reviewCta").classList.toggle("hide", !reviewing);
+    document.getElementById("huntCta").classList.toggle("hide", reviewing);
+
+    if (!reviewing) {
+      document.getElementById("finishHint").textContent = complete
+        ? "Nicely done — finish up and we’ll send your guide."
+        : left + " more to find, or finish whenever you like.";
+    }
     document.getElementById("confirmEarly").classList.add("hide");
 
     Hunt.paintProgress();
@@ -547,6 +575,12 @@
   document.getElementById("backBtn").addEventListener("click", function () {
     paintGrid();
     show("hunt");
+  });
+
+  document.getElementById("reviewBackBtn").addEventListener("click", function () {
+    paintDone();
+    show("done");
+    window.scrollTo(0, 0);
   });
 
   document.getElementById("exitBtn").addEventListener("click", function () {
