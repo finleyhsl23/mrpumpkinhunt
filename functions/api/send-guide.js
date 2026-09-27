@@ -23,16 +23,16 @@ const INK = "#3d2411";
 const MUTED = "#7b6857";
 
 const VARIETIES = {
-  "crown-prince":    { name: "Crown Prince",    best: "Roasting & soup",       note: "Keeps for months in a cool shed — and the flavour improves, so it is better at Christmas than today." },
-  "casperita":       { name: "Casperita",       best: "Decorating",            note: "White pumpkins are not painted; the skin simply never makes the orange pigment." },
-  "warty-goblin":    { name: "Warty Goblin",    best: "Carving & display",     note: "The warts are hard as bark and no two are ever the same." },
-  "grizzly-bear":    { name: "Grizzly Bear",    best: "Display",               note: "Tan rather than orange, and the warts are bred hard so they survive a day of handling." },
-  "blue-banana":     { name: "Blue Banana",     best: "Roasting & soup",       note: "Cut it into rings rather than wedges — it roasts far more evenly." },
-  "galaxy-of-stars": { name: "Galaxy of Stars", best: "Display",               note: "A gourd, not a pumpkin. Look at one end on and you will see the five points." },
-  "jill-be-little":  { name: "Jill Be Little",  best: "Decorating",            note: "Hollow one out, crack an egg in and bake it — properly edible." },
-  "tiny-turk":       { name: "Tiny Turk",       best: "Display",               note: "The knot on top is the blossom end, growing upwards instead of tucking in." },
-  "porcelain-doll":  { name: "Porcelain Doll",  best: "Roasting, soup & pies", note: "Pink pumpkins are grown worldwide to raise money for breast cancer charities." },
-  "magic-lantern":   { name: "Magic Lantern",   best: "Carving",               note: "Cut the lid slanted inwards or it drops straight through." },
+  "crown-prince":    { name: "Crown Prince",    best: "Gourmet roasting & baking",  note: "Smooth steel-grey-blue skin over deep orange flesh \u2014 dense, sweet, nutty, and almost no stringiness. It keeps for months in a cool shed, and the flavour improves, so it is better at Christmas than today." },
+  "casperita":       { name: "Casperita",        best: "Single-serve baking bowls",  note: "A pint-sized ghost-white pumpkin with a crisp pale rind and surprisingly sweet flesh. White pumpkins are not painted; the skin simply never makes the orange pigment." },
+  "warty-goblin":    { name: "Warty Goblin",     best: "Spooky Halloween porches",   note: "Hard-shelled and covered in bumpy warts that stay green while the rest of it matures to deep orange. The warts are hard as bark, and no two are ever the same." },
+  "grizzly-bear":    { name: "Grizzly Bear",     best: "Earthy autumn displays",     note: "It ripens from green to a dark tan-brown and is covered in heavy corky warts. Those warts are bred hard rather than soft, so they survive a day of handling." },
+  "blue-banana":     { name: "Blue Banana",      best: "Rich autumn soups",          note: "A banana-shaped heirloom with silvery-blue skin and thick, dry, finely grained orange flesh. Cut it into rings rather than wedges \u2014 it roasts far more evenly." },
+  "galaxy-of-stars": { name: "Galaxy of Stars",  best: "Eye-catching centrepieces",  note: "Star-shaped gourds rather than pumpkins, ridged and speckled in green, white and yellow. They are grown as a mixture on purpose, so no two are quite the same." },
+  "jill-be-little":  { name: "Jill Be Little",   best: "Crafts & tablescapes",       note: "A miniature heirloom with deep ribbing and a classic bright orange colour, small enough to sit in your palm. Hollow one out, crack an egg in and bake it \u2014 properly edible." },
+  "tiny-turk":       { name: "Tiny Turk",        best: "Whimsical tabletop decor",   note: "A scaled-down Turk\u2019s Turban with a cap-like top and patches of orange, cream and green. That knot on top is the blossom end, growing upwards instead of tucking in." },
+  "porcelain-doll":  { name: "Porcelain Doll",   best: "Chic modern decorating",     note: "A muted pink skin on a deeply ribbed, blocky frame, with sweet deep orange flesh. Pink pumpkins are grown worldwide to raise money for breast cancer charities." },
+  "magic-lantern":   { name: "Magic Lantern",    best: "Carving jack-o\u2019-lanterns",  note: "The quintessential jack-o\u2019-lantern: rich dark orange, round-to-oblong, with a sturdy dark green handle and walls thick enough to hold a face. Cut the lid slanted inwards or it drops straight through." },
 };
 
 const esc = (s) =>
