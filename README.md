@@ -38,7 +38,8 @@ qr.html                     printable sign sheet + staff key  (/qr)
 assets/pumpkins.js          THE CONTENT FILE — names, descriptions, codes
 assets/app.js               progress store, offline queue
 assets/styles.css           all colour lives in the :root block at the top
-assets/pumpkins/*.svg       placeholder artwork (see below)
+assets/pumpkins/*.webp      the photographs, cut out and compressed
+assets/pumpkins/png/        the same, on a tile, for the email (Gmail strips SVG)
 assets/vendor/qrcode.js     vendored QR encoder for the printed signs
 assets/vendor/jsqr.js       vendored QR reader for the in-app scanner
 functions/api/track.js      anonymous stats
@@ -265,6 +266,9 @@ identification aid, not decoration. Keep it roughly honest.
 
 ### Photographs
 
+The photographs in `images/` are the patch's own studio shots, cut out by
+`tools/prepare-photos.py` and written to `assets/pumpkins/`.
+
 **Do not use seed-supplier or stock photographs.** They are copyrighted, some
 carry a visible copyright notice, and this site is a commercial one with a
 named agency in the footer. Two legitimate routes:
@@ -287,9 +291,21 @@ out, trims to the fruit, and writes WebP under 100KB each, so ten photos that
 arrived as 40MB end up as a few hundred KB and the offline cache survives.
 
 A photo already cut out on a phone is passed through untouched - iOS lifts a
-subject better than anything in that script. Known limitation: a shadow
-directly under the fruit often comes along with it. Usually fine, and a
-phone cut-out avoids it.
+subject better than anything in that script.
+
+How the cut-out works, and why it is not simply a colour threshold: these are
+studio shots on flat orange paper, and two of the pumpkins are themselves
+orange. Magic Lantern's skin measures 16.4 LAB units from the backdrop - the
+same hue, the same saturation, a shade darker - so any threshold that clears
+the paper also eats the fruit. Instead the backdrop is found by flooding
+inwards from the frame: backdrop is whatever the flood can reach, and a
+pumpkin stops it at its edge whatever colour it is.
+
+The cast shadow is the one thing that cannot be separated at all - it is the
+same paper, just in shade, directly beneath an identically coloured fruit. So
+the base of each cut-out is faded out instead. What remains reads as a shadow
+rather than a hard orange crescent, and the fruit looks grounded instead of
+floating.
 
 ### Photographs (old note)
 

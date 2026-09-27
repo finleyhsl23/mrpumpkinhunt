@@ -280,7 +280,7 @@
       setTimeout(function () { box.remove(); }, 5200);
     },
 
-    artFor: function (p) { return "/assets/pumpkins/" + p.slug + ".svg"; },
+    artFor: function (p) { return "/assets/pumpkins/" + p.slug + ".webp"; },
   };
 
   function paintOnline() {

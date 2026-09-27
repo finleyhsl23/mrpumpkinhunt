@@ -41,33 +41,192 @@ def has_usable_alpha(img):
     return 0.05 < transparent < 0.95
 
 
-def cut_out(bgr):
-    """Separate fruit from background with GrabCut.
+def flat_background(bgr):
+    """Is this a studio shot on a plain backdrop?
 
-    Seeded from a generous centre rectangle rather than anything clever: a
-    pumpkin photographed on purpose is centred and fills the frame, which is
-    exactly the case GrabCut handles well.
+    Judged from the border: if the outer frame is all one colour, it is a
+    backdrop, and keying on that colour beats GrabCut by a mile. A photo taken
+    out in the field has a busy border and falls through to GrabCut instead.
     """
     h, w = bgr.shape[:2]
-    rect = (int(w * 0.06), int(h * 0.06), int(w * 0.88), int(h * 0.88))
+    band = max(4, int(min(h, w) * 0.03))
+    border = np.concatenate([
+        bgr[:band].reshape(-1, 3), bgr[-band:].reshape(-1, 3),
+        bgr[:, :band].reshape(-1, 3), bgr[:, -band:].reshape(-1, 3),
+    ])
+    return float(border.std(axis=0).mean()) < 18.0, np.median(border, axis=0)
 
-    mask = np.zeros((h, w), np.uint8)
-    bgd, fgd = np.zeros((1, 65), np.float64), np.zeros((1, 65), np.float64)
-    cv2.grabCut(bgr, mask, rect, bgd, fgd, 5, cv2.GC_INIT_WITH_RECT)
-    fg = np.where((mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD), 255, 0).astype(np.uint8)
 
-    # Keep only the biggest blob: stray corners of background get picked up
-    # otherwise, and a floating scrap of straw is worse than a soft edge.
-    n, labels, stats, _ = cv2.connectedComponentsWithStats(fg, 8)
-    if n > 1:
-        biggest = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
-        fg = np.where(labels == biggest, 255, 0).astype(np.uint8)
+def key_out(bgr, _bg_bgr):
+    """Cut out against a plain backdrop by flooding inwards from the edges.
 
-    fg = cv2.morphologyEx(fg, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
-    fg = cv2.morphologyEx(fg, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    The obvious approach - threshold every pixel on its distance from the
+    backdrop colour - fails badly here, because two of these pumpkins are
+    orange on an orange backdrop. Anything close to the backdrop colour gets
+    classified as backdrop no matter where it sits, so Magic Lantern lost all
+    but a sliver and Warty Goblin was hollowed out, leaving only its warts.
+
+    Flooding is about connection rather than colour: start at the corners and
+    spread through pixels similar to their neighbours. Backdrop is whatever
+    the flood can reach. A pumpkin the same colour as the backdrop still stops
+    it, because its edge is darker than the paper around it - and a hole in the
+    middle of the fruit is unreachable by definition.
+    """
+    h, w = bgr.shape[:2]
+    blurred = cv2.GaussianBlur(bgr, (5, 5), 0)
+
+    mask = np.zeros((h + 2, w + 2), np.uint8)
+    # Neighbour-relative, not fixed-range: a paper backdrop is lit unevenly,
+    # and a flood that insists every pixel match the corner leaves islands of
+    # slightly-shaded paper behind. Following the gradient sweeps the lot.
+    # 18, not 10: the cast shadow under each pumpkin is the backdrop in
+    # shade, and a tighter flood stops dead at it, leaving a hard orange blob
+    # beneath the fruit that reads as a mistake. Following the gradient down
+    # into the shadow sweeps it. Higher than this starts walking into the
+    # fruit itself on the softer-edged ones.
+    tol = (18, 18, 18)
+    flags = 4 | cv2.FLOODFILL_MASK_ONLY | (255 << 8)
+
+    # Seed all round the frame, not just the corners: one corner may not
+    # reach the far side past the subject.
+    seeds = []
+    for x in range(2, w - 2, max(8, w // 60)):
+        seeds += [(x, 1), (x, h - 2)]
+    for y in range(2, h - 2, max(8, h // 60)):
+        seeds += [(1, y), (w - 2, y)]
+
+    for sx, sy in seeds:
+        if mask[sy + 1, sx + 1] == 0:
+            cv2.floodFill(blurred, mask, (sx, sy), 0, tol, tol, flags)
+
+    background = mask[1:-1, 1:-1]
+    subject = cv2.bitwise_not(background)
+
+    subject = cv2.morphologyEx(subject, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    subject = cv2.morphologyEx(subject, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    return subject
+
+
+def strip_fringe(bgr, mask, bg_bgr):
+    """Remove leftover backdrop clinging to the edge of the cut-out.
+
+    Shading and soft shadow stop the flood a little short, leaving an orange
+    halo and the odd island. Colour alone cannot be trusted to clear it - two
+    of these pumpkins ARE orange - so it is only applied within a band around
+    the mask's own boundary. The middle of the fruit is never touched.
+    """
+    lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB).astype(np.float32)
+    bg = cv2.cvtColor(np.uint8([[bg_bgr]]), cv2.COLOR_BGR2LAB).astype(np.float32)[0][0]
+
+    # Tight, and on all three channels. An earlier, looser version removed
+    # anything merely orange-ish near the edge, which ate the orange stripes
+    # off Tiny Turk and took half the fruit with them. This only clears paper
+    # that is near-identical to the backdrop; the flood handles the rest.
+    # 10, not 16. Magic Lantern's skin measures 16.4 LAB units from the
+    # backdrop - the same hue and saturation, a shade darker - so a threshold
+    # of 16 classified the fruit itself as leftover paper and reduced its mask
+    # to six rows. True backdrop sits within 5 of itself, so 10 clears the
+    # halo and leaves the closest-matching fruit alone.
+    close_to_backdrop = np.linalg.norm(lab - bg, axis=2) < 10
+
+    inner = cv2.erode(mask, np.ones((13, 13), np.uint8))
+    edge_band = (mask > 0) & (inner == 0)
+
+    cleaned = mask.copy()
+    cleaned[edge_band & close_to_backdrop] = 0
+    cleaned = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    return cv2.erode(cleaned, np.ones((3, 3), np.uint8))
+
+
+def largest_blob(mask):
+    """Keep only the biggest shape. A stray speck of backdrop read as fruit is
+    worse than a slightly soft edge."""
+    n, labels, stats, _ = cv2.connectedComponentsWithStats(mask, 8)
+    if n <= 1:
+        return mask
+    biggest = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+    return np.where(labels == biggest, 255, 0).astype(np.uint8)
+
+
+def fill_holes(mask):
+    """A pumpkin is solid. Anything enclosed by it belongs to it - a dark
+    hollow under a stem would otherwise be punched straight through."""
+    flood = mask.copy()
+    h, w = mask.shape
+    cv2.floodFill(flood, np.zeros((h + 2, w + 2), np.uint8), (0, 0), 255)
+    return mask | cv2.bitwise_not(flood)
+
+
+def cut_out(bgr, report=None):
+    """Separate fruit from background.
+
+    Keying is tried first because these are studio shots on a plain backdrop
+    and it is far more accurate there. GrabCut is the fallback for a photo
+    taken in the field, where it handles a busy background better.
+    """
+    flat, bg = flat_background(bgr)
+    mask = None
+
+    if flat:
+        mask = largest_blob(key_out(bgr, bg))
+        mask = fill_holes(largest_blob(strip_fringe(bgr, mask, bg)))
+
+    # Sanity check. A mask covering almost nothing means the subject was eaten;
+    # almost everything means the backdrop leaked in. Either way GrabCut is a
+    # better bet than shipping a shredded pumpkin.
+    def plausible(m):
+        if m is None:
+            return False
+        share = float((m > 0).mean())
+        return 0.03 < share < 0.95
+
+    used_keying = plausible(mask)
+    if report is not None:
+        report["how"] = "keyed off the backdrop" if used_keying else "cut out with GrabCut"
+
+    if not used_keying:
+        h, w = bgr.shape[:2]
+        rect = (int(w * 0.06), int(h * 0.06), int(w * 0.88), int(h * 0.88))
+        gc = np.zeros((h, w), np.uint8)
+        cv2.grabCut(bgr, gc, rect, np.zeros((1, 65), np.float64),
+                    np.zeros((1, 65), np.float64), 5, cv2.GC_INIT_WITH_RECT)
+        mask = fill_holes(largest_blob(
+            np.where((gc == cv2.GC_FGD) | (gc == cv2.GC_PR_FGD), 255, 0).astype(np.uint8)))
+
+    mask = soften_base(mask)
     # Feather by a pixel or two so the edge does not look cut with scissors.
-    fg = cv2.GaussianBlur(fg, (5, 5), 0)
-    return fg
+    return cv2.GaussianBlur(mask, (5, 5), 0)
+
+
+def soften_base(mask):
+    """Fade the very bottom of the cut-out out to nothing.
+
+    Each of these sits on a lit backdrop and casts a shadow directly beneath
+    it. That shadow is the same orange as the paper, only darker, so no colour
+    test separates it from an orange pumpkin - and it tapers rather than
+    flaring, so there is no waist in the silhouette to cut at either. Both
+    were tried.
+
+    Fading the base sidesteps the problem: whatever remains down there stops
+    being a hard-edged orange crescent and becomes a soft shadow, which is
+    what the eye expects under a pumpkin anyway. It costs a few pixels on the
+    ones that were already clean, and they look grounded rather than cut out.
+    """
+    rows = np.flatnonzero((mask > 0).sum(axis=1))
+    if len(rows) < 40:
+        return mask
+
+    top, bottom = rows[0], rows[-1]
+    fade = max(10, int((bottom - top) * 0.13))
+    start = max(top, bottom - fade)
+
+    ramp = mask.astype(np.float32)
+    for i, y in enumerate(range(bottom, start - 1, -1)):
+        # Eased rather than linear: a straight ramp still left the bottom
+        # half-opaque, which is where the shadow actually is. This clears the
+        # last few per cent properly and recovers within a dozen pixels.
+        ramp[y] *= min(1.0, (i / float(fade)) ** 1.6)
+    return np.clip(ramp, 0, 255).astype(np.uint8)
 
 
 def trim(bgra):
@@ -124,9 +283,10 @@ def main(src_dir, out_dir):
             bgra, how = raw, "kept the phone's cut-out"
         else:
             bgr = raw[:, :, :3] if raw.ndim == 3 else cv2.cvtColor(raw, cv2.COLOR_GRAY2BGR)
-            alpha = cut_out(bgr)
+            report = {}
+            alpha = cut_out(bgr, report)
             bgra = np.dstack([bgr, alpha])
-            how = "cut out here"
+            how = report.get("how", "cut out")
 
         bgra = fit(trim(bgra))
         out = os.path.join(out_dir, slug + ".webp")

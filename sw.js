@@ -8,7 +8,7 @@
  * Bump CACHE when anything in SHELL changes, or phones keep serving the old
  * copy until their site data is cleared.
  */
-var CACHE = "mrpumpkin-v15";
+var CACHE = "mrpumpkin-v17";
 
 /* Canonical, extensionless paths only.
  *
@@ -28,16 +28,16 @@ var SHELL = [
   "/assets/vendor/jsqr.js",
   "/assets/favicon.svg",
   "/assets/field.svg",
-  "/assets/pumpkins/crown-prince.svg",
-  "/assets/pumpkins/casperita.svg",
-  "/assets/pumpkins/warty-goblin.svg",
-  "/assets/pumpkins/grizzly-bear.svg",
-  "/assets/pumpkins/blue-banana.svg",
-  "/assets/pumpkins/galaxy-of-stars.svg",
-  "/assets/pumpkins/jill-be-little.svg",
-  "/assets/pumpkins/tiny-turk.svg",
-  "/assets/pumpkins/porcelain-doll.svg",
-  "/assets/pumpkins/magic-lantern.svg",
+  "/assets/pumpkins/crown-prince.webp",
+  "/assets/pumpkins/casperita.webp",
+  "/assets/pumpkins/warty-goblin.webp",
+  "/assets/pumpkins/grizzly-bear.webp",
+  "/assets/pumpkins/blue-banana.webp",
+  "/assets/pumpkins/galaxy-of-stars.webp",
+  "/assets/pumpkins/jill-be-little.webp",
+  "/assets/pumpkins/tiny-turk.webp",
+  "/assets/pumpkins/porcelain-doll.webp",
+  "/assets/pumpkins/magic-lantern.webp",
 ];
 
 /* Strips the redirected flag by rebuilding the response. A response that
