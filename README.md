@@ -266,56 +266,33 @@ identification aid, not decoration. Keep it roughly honest.
 
 ### Photographs
 
-The photographs in `images/` are the patch's own studio shots, cut out by
-`tools/prepare-photos.py` and written to `assets/pumpkins/`.
+The photographs in `images/` are the patch's own studio shots, taken on Mr
+Pumpkin's orange backdrop. **The backdrop stays.** It is what makes ten
+photographs taken separately read as one set, and it is why each tile frames a
+square photo rather than floating a cut-out. Nothing is removed.
+
+Prepare them with:
+
+```
+python3 tools/prepare-photos.py images/ assets/pumpkins/
+```
+
+It squares each one off and squeezes it to WebP under 100KB. That is the whole
+job, and it matters: ten photographs straight off a camera is 30-50MB, which
+would destroy the offline precache and with it the reason the hunt works in a
+field with no signal. Ten come to about 740KB.
+
+Bump `CACHE` in `sw.js` afterwards or phones will keep serving the old set.
+
+`--cutout` removes the backdrop instead, for a photograph taken somewhere that
+is not the studio. It floods inwards from the frame rather than thresholding on
+colour, because colour cannot do this job here: Magic Lantern's skin sits 16
+LAB units from the orange paper - the same hue and saturation, a shade darker -
+so any threshold that clears the paper clears the pumpkin with it.
 
 **Do not use seed-supplier or stock photographs.** They are copyrighted, some
 carry a visible copyright notice, and this site is a commercial one with a
-named agency in the footer. Two legitimate routes:
-
-1. **The patch's own camera.** Twenty minutes on an overcast day. Free,
-   clean, and a photo of the pumpkin actually growing in that field is more
-   use for identification than a catalogue shot of a different one.
-2. **Ask the seed supplier.** Growers are often granted use of catalogue
-   images, and several suppliers keep a library for exactly this. Get it in
-   writing before it goes live.
-
-Once photos exist, `tools/prepare-photos.py` does the rest:
-
-```
-python3 tools/prepare-photos.py incoming/ assets/pumpkins/
-```
-
-Name each file after its slug (`crown-prince.jpg`). It cuts the background
-out, trims to the fruit, and writes WebP under 100KB each, so ten photos that
-arrived as 40MB end up as a few hundred KB and the offline cache survives.
-
-A photo already cut out on a phone is passed through untouched - iOS lifts a
-subject better than anything in that script.
-
-How the cut-out works, and why it is not simply a colour threshold: these are
-studio shots on flat orange paper, and two of the pumpkins are themselves
-orange. Magic Lantern's skin measures 16.4 LAB units from the backdrop - the
-same hue, the same saturation, a shade darker - so any threshold that clears
-the paper also eats the fruit. Instead the backdrop is found by flooding
-inwards from the frame: backdrop is whatever the flood can reach, and a
-pumpkin stops it at its edge whatever colour it is.
-
-The cast shadow is the one thing that cannot be separated at all - it is the
-same paper, just in shade, directly beneath an identically coloured fruit. So
-the base of each cut-out is faded out instead. What remains reads as a shadow
-rather than a hard orange crescent, and the fruit looks grounded instead of
-floating.
-
-### Photographs (old note)
-
-The artwork is placeholder illustration. **It should be replaced with photos of
-the patch's own pumpkins**, not stock images: stock is a copyright liability on
-a commercial site, and a generic photo of a Crown Prince is less use for
-identification than a picture of the one actually growing in that field.
-
-Twenty minutes with a phone on an overcast day covers it. Shoot each variety
-on its own, from the side, filling the frame, against something plain.
+named agency in the footer.
 
 ### Swapping in real photographs
 

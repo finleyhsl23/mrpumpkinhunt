@@ -255,10 +255,11 @@
 
   /* ---------- the grid ---------- */
 
-  /* Tiles are sized against the biggest variety, so the grid shows real
-     relative size at a glance - a Jill Be Little really is a quarter of a
-     Grizzly Bear, and that helps you spot it in the field. */
-  var maxScale = Math.max.apply(null, window.PUMPKINS.map(function (p) { return p.scale; }));
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
 
   function tile(p) {
     var found = Hunt.isFound(p.slug);
@@ -268,10 +269,11 @@
 
     /* The pumpkin and its name show whether or not it has been found. With
        fifty varieties growing in that field, knowing what you are looking
-       for IS the game - a silhouette helps nobody spot a Porcelain Doll. */
-    var h = Math.round(40 + (p.scale / maxScale) * 60);
+       for IS the game - a silhouette helps nobody spot a Porcelain Doll.
+       Every frame is the same size: the photographs share one backdrop, and
+       sizing them differently would break the set. */
     el.innerHTML =
-      '<div class="tile-art"><img src="' + Hunt.artFor(p) + '" alt="" style="height:' + h + 'px" loading="lazy"></div>' +
+      '<div class="tile-art"><img src="' + Hunt.artFor(p) + '" alt="' + esc(p.name) + '" loading="lazy"></div>' +
       '<div class="tile-name">' + p.name + "</div>" +
       '<div class="tile-sub">' + (found ? p.bestFor : (p.hint || "Still to find")) + "</div>" +
       (found
