@@ -41,8 +41,14 @@ const esc = (s) =>
 function buildEmail(name, foundSlugs) {
   const found = foundSlugs.filter((s) => VARIETIES[s]);
   const missed = Object.keys(VARIETIES).filter((s) => !found.includes(s));
-  const who = name ? esc(name) : "you";
   const all = found.length === Object.keys(VARIETIES).length;
+
+  /* Greet by name when there is one, and simply say "Well done." when there
+     is not. Falling back to the word "you" produced "Well done you.", which
+     reads like a machine filling in a blank. */
+  const praise = all ? "Well done" : "Nicely done";
+  const headline = name ? `${praise} ${esc(name)}.` : `${praise}.`;
+  const headlineText = name ? `${praise} ${name}.` : `${praise}.`;
 
   /* Tables and inline styles throughout: Outlook still has no flexbox, and
      a <style> block is stripped by several clients including Gmail. */
@@ -95,7 +101,7 @@ function buildEmail(name, foundSlugs) {
       ${all ? "All ten found" : `${found.length} of 10 found`}
     </div>
     <h1 style="font:700 27px/1.2 Georgia,'Times New Roman',serif;color:${INK};margin:12px 0 0">
-      ${all ? `Well done ${who}.` : `Nicely done ${who}.`}
+      ${headline}
     </h1>
     <p style="font:400 15px/1.6 Arial,Helvetica,sans-serif;color:${MUTED};margin:10px 0 0">
       Here is every variety you found on the hunt, and what each one is actually good for once you get it home.
@@ -134,7 +140,7 @@ function buildEmail(name, foundSlugs) {
 </body></html>`;
 
   const text =
-    `${all ? "Well done" : "Nicely done"} ${name || "you"} - ${found.length} of 10 found at Mr Pumpkin.\n\n` +
+    `${headlineText} ${found.length} of 10 found at Mr Pumpkin.\n\n` +
     found.map((s) => `${VARIETIES[s].name} - ${VARIETIES[s].best}\n  ${VARIETIES[s].note}`).join("\n\n") +
     (missed.length ? `\n\nStill out there: ${missed.map((s) => VARIETIES[s].name).join(", ")}` : "") +
     `\n\nBack to the hunt: ${SITE}\n\nSent once because you asked for it at the end of the hunt.\nBuilt by SmartCore Technology - smartcoretechnology.co.uk\n`;
