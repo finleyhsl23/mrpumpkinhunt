@@ -54,6 +54,49 @@
       <button class="btn btn-primary" id="startBtn">Start the hunt</button>
     </div>
 
+    <!-- Jim's own words, from the Mr Pumpkin site. It sits below the button
+         rather than above it: somebody stood at the gate wants to start, and
+         somebody waiting for the rest of their family wants to read. Only the
+         opening is shown, because 600 words is a wall on a phone, and the
+         rest is one tap away and verbatim - his voice is the point of it. -->
+    <section class="card about-card stack" id="about">
+      <div>
+        <span class="eyebrow">About Mr Pumpkin</span>
+        <h2 style="margin-top:10px">It started with 7,500 plants.</h2>
+      </div>
+
+      <div class="about-stats">
+        <div class="stat"><b>2017</b><span>First crop</span></div>
+        <div class="stat"><b>40,000</b><span>Plants since</span></div>
+        <div class="stat"><b>&pound;21,310</b><span>Raised for charity</span></div>
+      </div>
+
+      <p>After several years of taking my own family to &lsquo;pick your own pumpkin&rsquo; patches, in 2017 we decided to finally take the plunge and plant some of our own pumpkins. We took advice from others in the industry, and planted around 7,500 plants, offering our customers four varieties to choose from.</p>
+
+      <p>My motivation was two-fold really, first, that farming is my life. The family have farmed for several generations and I love the challenge and reward that farming brings. Also, it&rsquo;s very much about the whole romance of pumpkins. I never grew tired of the looks on faces as people wandered into a field which was a sea of orange pumpkins.</p>
+
+      <div class="about-rest hide" id="aboutRest">
+        <p>Children (and their parents) often spent hours trawling the patch before selecting their perfect pumpkin, and then played on the Bale Mountain or enjoyed the Pumpkin Trail around the farm, proper good old fashioned fun! The whole team had just the best time and met some lovely families. The popularity and feedback was just beyond all of our wildest dreams.</p>
+
+        <p>So, no sooner than we closed the doors on pumpkins 2017, we started planning what to do in future years, where to plant the crops and how many of which variety to plant.</p>
+
+        <p>2020 was a challenging year for everyone, farmers included! We planted 40,000 pumpkins in the middle of a worldwide pandemic, not knowing whether we would be able to allow pickers on site, or whether we would be living off pumpkin soup all year! Weather throughout the growing year was also against us, with little more than a few drops of rain for weeks after planting which really affected the crop. Despite these challenges we opened up on a limited numbers basis, and was so humbled by all the positive feedback from families who hadn&rsquo;t been able to get out and about safely, who could visit us and enjoy some outdoor fun whilst also feeling safe with very limited numbers on site and lots of space to social distance.</p>
+
+        <p>So this year, as in previous years, there will be lots of fun for the whole family. We are delighted that Oakfield Farm are partnering with us again to offer fabulous homemade food, produced less than 3 miles away in Stanley Common, you can&rsquo;t get much closer to the source of your food than that! We also have lots to keep little ones entertained. The Pumpkin Trail is always so popular.</p>
+
+        <p>Over the years we have raised over &pound;21,310.17 for our partner charity, Derbyshire, Leicestershire and Rutland Air Ambulance &mdash; a fabulous charity helping our emergency services, and one which relies entirely on charitable donations. I was also really touched by feedback from some of our pumpkin pickers as to how the Air Ambulance had personally impacted upon them. So this year, our pumpkin trail will be back with another brain teaser and some tricks and treats on the way.</p>
+
+        <p>Anyway, enough rambling, time to get off and tend to those pumpkins. Looking forward to seeing friends old and new come October!</p>
+      </div>
+
+      <button class="skip" id="aboutMore" aria-expanded="false" aria-controls="aboutRest">Read the rest of Jim&rsquo;s story</button>
+
+      <div class="signoff">
+        <b>Jim Knifton</b>
+        <span>aka Mr Pumpkin</span>
+      </div>
+    </section>
+
     <footer class="foot">
       <p>Mr Pumpkin &middot; Pick Your Perfect Pumpkin Near Derby</p>
       <p>Hunt built by <a href="https://smartcoretechnology.co.uk" rel="noopener">SmartCore Technology</a></p>
@@ -612,6 +655,13 @@
   document.getElementById("backBtn").addEventListener("click", function () {
     paintGrid();
     show("hunt");
+  });
+
+  document.getElementById("aboutMore").addEventListener("click", function () {
+    var rest = document.getElementById("aboutRest");
+    var open = rest.classList.toggle("hide") === false;
+    this.setAttribute("aria-expanded", open ? "true" : "false");
+    this.textContent = open ? "Show less" : "Read the rest of Jim\u2019s story";
   });
 
   document.getElementById("reviewBackBtn").addEventListener("click", function () {

@@ -509,6 +509,64 @@ body.is-offline .offline { display: block }
 .chip b { display: block; font-size: 16px; font-weight: 700; color: var(--ink); white-space: nowrap }
 .chip span { display: block; font-size: 11.5px; color: var(--dim); margin-top: 2px; line-height: 1.35 }
 
+/* ---------- about Mr Pumpkin ---------- */
+
+.about-card {
+  margin-top: 16px;
+  border-color: rgba(249, 115, 22, .22);
+}
+.about-card p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.62;
+}
+
+/* The three numbers that carry the story: when it started, how big it got,
+   and what it has raised. Read before anyone reads a paragraph. */
+.about-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.stat { text-align: center }
+.stat b {
+  display: block;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--orange-3);
+  white-space: nowrap;
+}
+.stat span {
+  display: block;
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 3px;
+  line-height: 1.3;
+}
+
+.about-rest > p + p { margin-top: 14px }
+.about-rest > p:first-child { margin-top: 14px }
+
+.signoff {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.signoff b {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  color: var(--ink);
+}
+.signoff span {
+  display: block;
+  font-size: 12px;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
 /* The email ask. Deliberately skippable: asking before anyone has had the
    fun costs players, and a family stood in a field with no signal cannot
    answer it at all. */
